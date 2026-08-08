@@ -1,0 +1,15 @@
+﻿**/target/
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+**/application-local.properties
+**/application-local.yml
+**/application-local.yaml
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
