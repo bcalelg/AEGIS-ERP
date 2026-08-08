@@ -1,4 +1,4 @@
-﻿# AEGIS-ERP Backend
+# AEGIS-ERP Backend
 
 API REST inicial organizada como monolito modular N-capas. Cada módulo separa `controller`, `service`, `repository`, `dto`, `entity` y `mapper`; los controllers usan DTOs y nunca exponen entidades JPA.
 
@@ -22,4 +22,4 @@ mvn spring-boot:run
 
 No guarde contraseñas en Git; `.env*` y `application-local.*` están ignorados. Hibernate usa `ddl-auto=validate` y no altera tablas. Oracle y el esquema de Fase 1 deben estar disponibles antes del arranque.
 
-Endpoints: `GET http://localhost:8080/api/health` y `GET http://localhost:8080/api/health/database`. El segundo consulta Oracle mediante `JdbcTemplate`. Spring Security permite temporalmente sólo ambos health checks.
+Endpoints públicos temporales: `GET http://localhost:8080/api/health`, `GET http://localhost:8080/api/health/database` y `POST http://localhost:8080/api/auth/login`. El login acepta `idUsuario` y `password`, compara BCrypt y aún no emite JWT; JWT se integrará en una fase posterior.
