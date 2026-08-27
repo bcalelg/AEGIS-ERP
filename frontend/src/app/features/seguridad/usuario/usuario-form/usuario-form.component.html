@@ -1,0 +1,124 @@
+<section class="card usuario-form-card mb-4">
+  <div class="card-header">
+    <h2 class="card-title mb-0">{{ selected() ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="row g-3">
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="usuario-id">Usuario</label>
+          <input id="usuario-id" class="form-control" formControlName="idUsuario" maxlength="50" autocomplete="off" />
+          @if (invalid('idUsuario')) { <div class="text-danger small mt-1">El usuario es obligatorio y admite hasta 50 caracteres.</div> }
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="usuario-nombre">Nombre</label>
+          <input id="usuario-nombre" class="form-control" formControlName="nombre" maxlength="100" autocomplete="off" />
+          @if (invalid('nombre')) { <div class="text-danger small mt-1">El nombre es obligatorio.</div> }
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="usuario-apellido">Apellidos</label>
+          <input id="usuario-apellido" class="form-control" formControlName="apellido" maxlength="100" autocomplete="off" />
+          @if (invalid('apellido')) { <div class="text-danger small mt-1">Los apellidos son obligatorios.</div> }
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="usuario-nacimiento">Fecha de nacimiento</label>
+          <input id="usuario-nacimiento" class="form-control" type="date" formControlName="fechaNacimiento" [max]="maximumBirthDate" />
+          @if (form.controls.fechaNacimiento.touched && form.controls.fechaNacimiento.hasError('required')) {
+            <div class="text-danger small mt-1">La fecha de nacimiento es obligatoria.</div>
+          } @else if (form.controls.fechaNacimiento.touched && form.controls.fechaNacimiento.hasError('underage')) {
+            <div class="text-danger small mt-1">El usuario debe tener al menos 18 años.</div>
+          }
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="usuario-correo">Correo electrónico</label>
+          <input id="usuario-correo" class="form-control" type="email" formControlName="correoElectronico" maxlength="100" autocomplete="off" />
+          @if (form.controls.correoElectronico.touched && form.controls.correoElectronico.hasError('required')) {
+            <div class="text-danger small mt-1">El correo electrónico es obligatorio.</div>
+          } @else if (invalid('correoElectronico')) {
+            <div class="text-danger small mt-1">El correo electrónico no tiene un formato válido.</div>
+          }
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="usuario-telefono">Teléfono móvil</label>
+          <input id="usuario-telefono" class="form-control" type="tel" formControlName="telefonoMovil" maxlength="30" autocomplete="tel" />
+          @if (form.controls.telefonoMovil.touched && form.controls.telefonoMovil.hasError('maxlength')) {
+            <div class="text-danger small mt-1">El teléfono admite hasta 30 caracteres.</div>
+          } @else if (invalid('telefonoMovil')) {
+            <div class="text-danger small mt-1">El teléfono solo puede contener números, espacios, +, -, ( y ).</div>
+          }
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="usuario-genero">Género</label>
+          <select id="usuario-genero" class="form-select" formControlName="idGenero">
+            <option [ngValue]="0">Seleccione un género</option>
+            @for (item of genders(); track item.id) { <option [ngValue]="item.id">{{ item.nombre }}</option> }
+          </select>
+          @if (invalid('idGenero')) { <div class="text-danger small mt-1">Seleccione un género.</div> }
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="usuario-status">Estatus</label>
+          <select id="usuario-status" class="form-select" formControlName="idStatusUsuario">
+            <option [ngValue]="0">Seleccione un estatus</option>
+            @for (item of statuses(); track item.id) { <option [ngValue]="item.id">{{ item.nombre }}</option> }
+          </select>
+          @if (invalid('idStatusUsuario')) { <div class="text-danger small mt-1">Seleccione un estatus.</div> }
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="usuario-role">Rol</label>
+          <select id="usuario-role" class="form-select" formControlName="idRole">
+            <option [ngValue]="0">Seleccione un rol</option>
+            @for (item of roles(); track item.id) { <option [ngValue]="item.id">{{ item.nombre }}</option> }
+          </select>
+          @if (invalid('idRole')) { <div class="text-danger small mt-1">Seleccione un rol.</div> }
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="usuario-empresa">Empresa</label>
+          <select id="usuario-empresa" class="form-select" formControlName="idEmpresa" (change)="companyChanged()">
+            <option [ngValue]="0">Seleccione una empresa</option>
+            @for (item of companies(); track item.id) { <option [ngValue]="item.id">{{ item.nombre }}</option> }
+          </select>
+          @if (invalid('idEmpresa')) { <div class="text-danger small mt-1">Seleccione una empresa.</div> }
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="usuario-sucursal">Sucursal</label>
+          <select id="usuario-sucursal" class="form-select" formControlName="idSucursal">
+            <option [ngValue]="0">Seleccione una sucursal</option>
+            @for (item of branches(); track item.id) { <option [ngValue]="item.id">{{ item.nombre }}</option> }
+          </select>
+          @if (loadingBranches()) { <small class="text-muted">Cargando sucursales…</small> }
+          @if (invalid('idSucursal')) { <div class="text-danger small mt-1">Seleccione una sucursal.</div> }
+        </div>
+        <div class="col-lg-6">
+          <label class="form-label" for="usuario-pregunta">Pregunta de recuperación</label>
+          <input id="usuario-pregunta" class="form-control" formControlName="pregunta" maxlength="200" autocomplete="off" />
+          @if (invalid('pregunta')) { <div class="text-danger small mt-1">La pregunta es obligatoria.</div> }
+        </div>
+        <div class="col-lg-6">
+          <label class="form-label" for="usuario-respuesta">Respuesta {{ selected() ? '(dejar vacía para conservar)' : '' }}</label>
+          <input id="usuario-respuesta" class="form-control" type="password" formControlName="respuesta" maxlength="200" autocomplete="new-password" />
+          @if (invalid('respuesta')) { <div class="text-danger small mt-1">La respuesta es obligatoria en el alta y admite hasta 200 caracteres.</div> }
+        </div>
+        @if (!selected()) {
+          <div class="col-sm-6">
+            <label class="form-label" for="usuario-password">Contraseña temporal</label>
+            <input id="usuario-password" class="form-control" type="password" formControlName="password" autocomplete="new-password" />
+            <small class="text-muted">Debe cumplir la política de la empresa seleccionada.</small>
+            @if (invalid('password')) { <div class="text-danger small mt-1">La contraseña temporal es obligatoria.</div> }
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label" for="usuario-password-confirmacion">Confirmar contraseña</label>
+            <input id="usuario-password-confirmacion" class="form-control" type="password" formControlName="passwordConfirmacion" autocomplete="new-password" />
+            @if (invalid('passwordConfirmacion')) { <div class="text-danger small mt-1">Las contraseñas son obligatorias y deben coincidir.</div> }
+          </div>
+        }
+      </div>
+      <div class="d-flex flex-wrap gap-2 justify-content-end mt-4">
+        <button class="btn btn-secondary" type="button" [disabled]="saving()" (click)="cancel()">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="saving() || loadingCatalogs() || loadingBranches()">
+          @if (saving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          Guardar
+        </button>
+      </div>
+    </form>
+  </div>
+</section>

@@ -1,0 +1,114 @@
+<section class="page-header no-print">
+  <div>
+    <span class="eyebrow">Seguridad</span>
+    <h1>Roles</h1>
+    <p>Administración de los roles del sistema.</p>
+  </div>
+</section>
+
+@if (formOpen()) {
+  <app-role-form [selected]="editing()" (saved)="saved()" (cancelled)="closeForm()" />
+}
+
+<section class="card role-card">
+  <div class="card-header no-print">
+    <div class="role-toolbar">
+      @if (permissions()?.alta) {
+        <button class="btn btn-primary" type="button" (click)="openCreate()">
+          <i class="bi bi-plus-lg me-2"></i>Nuevo rol
+        </button>
+      }
+      <div class="input-group role-search">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input
+          class="form-control"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+          placeholder="Buscar por nombre"
+        />
+      </div>
+      @if (permissions()?.imprimir) {
+        <button class="btn btn-outline-secondary" type="button" (click)="print()">
+          <i class="bi bi-printer me-2"></i>Imprimir
+        </button>
+      }
+      @if (permissions()?.exportar) {
+        <div class="dropdown">
+          <button
+            class="btn btn-outline-secondary dropdown-toggle"
+            type="button"
+            [attr.aria-expanded]="exportOpen()"
+            (click)="exportOpen.update((open) => !open)"
+          >
+            <i class="bi bi-download me-2"></i>Exportar
+          </button>
+          <div class="dropdown-menu dropdown-menu-end" [class.show]="exportOpen()">
+            <button class="dropdown-item" type="button" (click)="exportExcel()">
+              Excel (.xlsx)
+            </button>
+            <button class="dropdown-item" type="button" (click)="exportPdf()">PDF (.pdf)</button>
+            <button class="dropdown-item" type="button" (click)="exportCsv()">CSV (.csv)</button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="card-body">
+    @if (error()) {
+      <div class="alert alert-danger">{{ error() }}</div>
+    }
+    @if (loading()) {
+      <div class="text-center py-5">
+        <span class="spinner-border text-primary"></span>
+        <p class="mt-2">Cargando roles…</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th class="text-end no-print">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of filteredItems(); track item.id) {
+              <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.nombre }}</td>
+                <td class="text-end no-print">
+                  @if (permissions()?.cambio) {
+                    <button
+                      class="btn btn-sm btn-outline-primary me-2"
+                      type="button"
+                      (click)="openEdit(item)"
+                    >
+                      Editar
+                    </button>
+                  }
+                  @if (permissions()?.baja) {
+                    <button
+                      class="btn btn-sm btn-outline-danger"
+                      type="button"
+                      (click)="confirmRemove(item)"
+                    >
+                      Eliminar
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="3" class="text-center text-muted py-4">
+                  No se encontraron registros.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <small>Mostrando {{ filteredItems().length }} de {{ items().length }}</small>
+    }
+  </div>
+</section>

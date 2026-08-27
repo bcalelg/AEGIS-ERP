@@ -1,0 +1,35 @@
+.usuario-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.usuario-search {
+  min-width: min(100%, 280px);
+  max-width: 560px;
+  flex: 1;
+}
+
+.usuario-table th,
+.usuario-table td {
+  white-space: nowrap;
+}
+
+.usuario-table td:nth-child(2),
+.usuario-table td:nth-child(3) {
+  white-space: normal;
+  min-width: 150px;
+}
+
+@media (max-width: 575.98px) {
+  .usuario-toolbar > *,
+  .usuario-search {
+    width: 100%;
+    max-width: none;
+  }
+
+  .usuario-toolbar .dropdown .btn {
+    width: 100%;
+  }
+}

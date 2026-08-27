@@ -1,0 +1,139 @@
+<section class="page-header">
+  <div>
+    <span class="eyebrow">Seguridad</span>
+    <h1>Asignar opciones a un rol</h1>
+    <p>Configure los permisos del rol por módulo y opción.</p>
+  </div>
+</section>
+
+<section class="card mb-4">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label" for="role-selector">Rol</label>
+        <select
+          id="role-selector"
+          class="form-select"
+          [ngModel]="selectedRole()"
+          (ngModelChange)="changeSelection($event, selectedModulo())"
+        >
+          <option [ngValue]="0">Seleccione un rol</option>
+          @for (role of roles(); track role.id) {
+            <option [ngValue]="role.id">{{ role.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="module-selector">Módulo</label>
+        <select
+          id="module-selector"
+          class="form-select"
+          [ngModel]="selectedModulo()"
+          (ngModelChange)="changeSelection(selectedRole(), $event)"
+        >
+          <option [ngValue]="0">Seleccione un módulo</option>
+          @for (module of modulos(); track module.id) {
+            <option [ngValue]="module.id">{{ module.nombre }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+</section>
+
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+<section class="card permission-card">
+  <div class="card-body">
+    @if (loading()) {
+      <div class="text-center py-5"><span class="spinner-border text-primary"></span></div>
+    } @else if (!selectedRole() || !selectedModulo()) {
+      <div class="text-center text-muted py-5">Seleccione un rol y un módulo.</div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle permission-table">
+          <thead>
+            <tr>
+              <th>Opción</th>
+              <th>Consultar</th>
+              <th>Alta</th>
+              <th>Baja</th>
+              <th>Cambio</th>
+              <th>Imprimir</th>
+              <th>Exportar</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (group of grouped(); track group[0]) {
+              <tr class="table-light">
+                <th colspan="7">{{ group[0] }}</th>
+              </tr>
+              @for (item of group[1]; track item.idOpcion) {
+                <tr>
+                  <td>{{ item.nombreOpcion }}</td>
+                  @for (
+                    key of ['consultar', 'alta', 'baja', 'cambio', 'imprimir', 'exportar'];
+                    track key
+                  ) {
+                    <td class="text-center">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        [checked]="$any(item)[key]"
+                        [disabled]="!permissions()?.cambio"
+                        (change)="toggle(item, $any(key), $any($event.target).checked)"
+                      />
+                    </td>
+                  }
+                </tr>
+              }
+            } @empty {
+              <tr>
+                <td colspan="7" class="text-center text-muted py-4">
+                  El módulo no contiene opciones.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (permissions()?.cambio) {
+        <div class="d-flex justify-content-end">
+          <button
+            class="btn btn-primary"
+            type="button"
+            [disabled]="!dirty() || saving()"
+            (click)="save()"
+          >
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            Guardar permisos
+          </button>
+        </div>
+      }
+    }
+  </div>
+</section>
+
+@if (pendingSelection()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header"><h2 class="modal-title fs-5">Cambios sin guardar</h2></div>
+        <div class="modal-body">
+          Hay cambios sin guardar. ¿Desea descartarlos y cambiar la selección?
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" (click)="keepEditing()">
+            Continuar editando</button
+          ><button class="btn btn-danger" type="button" (click)="discardChanges()">
+            Descartar cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

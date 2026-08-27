@@ -1,0 +1,23 @@
+<section class="page-header">
+  <div>
+    <span class="eyebrow">Módulo en preparación</span>
+    <h1>{{ page() }}</h1>
+    <p>Esta opción ya está asignada a tu rol y se implementará en una siguiente fase.</p>
+  </div>
+</section>
+<section class="construction-card">
+  <div class="construction-icon"><i class="bi bi-tools"></i></div>
+  <h2>Funcionalidad en construcción</h2>
+  <p>
+    La navegación y los permisos están listos. Aquí se integrará el mantenimiento correspondiente.
+  </p>
+  @if (permissions(); as access) {
+    <div class="permission-list">
+      <span [class.enabled]="access.consultar">Consultar</span
+      ><span [class.enabled]="access.alta">Alta</span><span [class.enabled]="access.baja">Baja</span
+      ><span [class.enabled]="access.cambio">Cambio</span
+      ><span [class.enabled]="access.imprimir">Imprimir</span
+      ><span [class.enabled]="access.exportar">Exportar</span>
+    </div>
+  }
+</section>

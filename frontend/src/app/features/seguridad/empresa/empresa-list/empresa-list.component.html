@@ -1,0 +1,131 @@
+<section class="page-header no-print">
+  <div>
+    <span class="eyebrow">Seguridad</span>
+    <h1>Empresas</h1>
+    <p>Administración de empresas y políticas corporativas de contraseña.</p>
+  </div>
+</section>
+@if (formOpen()) {
+  <app-empresa-form [selected]="editing()" (saved)="saved()" (cancelled)="closeForm()" />
+}
+<section class="card empresa-card">
+  <div class="card-header no-print">
+    <div class="empresa-toolbar">
+      @if (permissions()?.alta) {
+        <button class="btn btn-primary" type="button" (click)="openCreate()">
+          <i class="bi bi-plus-lg me-2"></i>Nueva empresa
+        </button>
+      }
+      <div class="input-group empresa-search">
+        <span class="input-group-text"><i class="bi bi-search"></i></span
+        ><input
+          class="form-control"
+          [(ngModel)]="search"
+          (keyup.enter)="load(0)"
+          placeholder="Buscar por nombre o NIT"
+        /><button class="btn btn-outline-secondary" (click)="load(0)">Buscar</button>
+      </div>
+      @if (permissions()?.imprimir) {
+        <button class="btn btn-outline-secondary" (click)="print()">
+          <i class="bi bi-printer me-2"></i>Imprimir
+        </button>
+      }
+      @if (permissions()?.exportar) {
+        <div class="dropdown">
+          <button
+            class="btn btn-outline-secondary dropdown-toggle"
+            type="button"
+            [attr.aria-expanded]="exportOpen()"
+            (click)="exportOpen.update((open) => !open)"
+          >
+            <i class="bi bi-download me-2"></i>Exportar
+          </button>
+          <div class="dropdown-menu dropdown-menu-end" [class.show]="exportOpen()">
+            <button class="dropdown-item" type="button" (click)="exportExcel()">
+              Excel (.xlsx)
+            </button>
+            <button class="dropdown-item" type="button" (click)="exportPdf()">PDF (.pdf)</button>
+            <button class="dropdown-item" type="button" (click)="exportCsv()">CSV (.csv)</button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="card-body">
+    <h2 class="print-title">Listado de empresas</h2>
+    @if (error()) {
+      <div class="alert alert-danger">{{ error() }}</div>
+    }
+    @if (loading()) {
+      <div class="text-center py-5">
+        <span class="spinner-border text-primary"></span>
+        <p class="mt-2">Cargando empresas…</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>NIT</th>
+              <th>Dirección</th>
+              <th class="text-end no-print">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of items(); track item.idEmpresa) {
+              <tr>
+                <td>{{ item.idEmpresa }}</td>
+                <td>{{ item.nombre }}</td>
+                <td>{{ item.nit }}</td>
+                <td>{{ item.direccion }}</td>
+                <td class="text-end no-print">
+                  @if (permissions()?.cambio) {
+                    <button
+                      class="btn btn-sm btn-outline-primary me-2"
+                      type="button"
+                      (click)="openEdit(item)"
+                    >
+                      Editar
+                    </button>
+                  }
+                  @if (permissions()?.baja) {
+                    <button class="btn btn-sm btn-outline-danger" (click)="confirmRemove(item)">
+                      Eliminar
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                  No se encontraron registros.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between align-items-center no-print">
+        <small>Mostrando {{ items().length }} de {{ totalElements() }}</small>
+        <nav>
+          <button
+            class="btn btn-sm btn-outline-secondary me-2"
+            [disabled]="page() === 0"
+            (click)="load(page() - 1)"
+          >
+            Anterior</button
+          ><span>{{ page() + 1 }} / {{ totalPages() || 1 }}</span
+          ><button
+            class="btn btn-sm btn-outline-secondary ms-2"
+            [disabled]="page() + 1 >= totalPages()"
+            (click)="load(page() + 1)"
+          >
+            Siguiente
+          </button>
+        </nav>
+      </div>
+    }
+  </div>
+</section>

@@ -1,3 +1,35 @@
 package com.aegis.erp.modules.seguridad.service;
-import com.aegis.erp.common.exception.DatabaseUnavailableException; import com.aegis.erp.common.response.DatabaseHealthResponse; import org.springframework.dao.DataAccessException; import org.springframework.jdbc.core.JdbcTemplate; import org.springframework.stereotype.Service;
-@Service public class DatabaseHealthService {private static final String SQL="SELECT USER AS SCHEMA_NAME, SYS_CONTEXT('USERENV', 'CON_NAME') AS CONTAINER_NAME FROM DUAL"; private final JdbcTemplate jdbc; public DatabaseHealthService(JdbcTemplate jdbc){this.jdbc=jdbc;} public DatabaseHealthResponse check(){try{return jdbc.queryForObject(SQL,(rs,n)->new DatabaseHealthResponse("UP","Oracle",rs.getString("SCHEMA_NAME"),rs.getString("CONTAINER_NAME")));}catch(DataAccessException e){throw new DatabaseUnavailableException(e);}}}
+
+import com.aegis.erp.common.exception.DatabaseUnavailableException;
+import com.aegis.erp.common.response.DatabaseHealthResponse;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class DatabaseHealthService {
+    private static final String SQL =
+            "SELECT USER AS SCHEMA_NAME, SYS_CONTEXT('USERENV', 'CON_NAME') AS CONTAINER_NAME FROM"
+                + " DUAL";
+    private final JdbcTemplate jdbc;
+
+    public DatabaseHealthService(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
+    }
+
+    public DatabaseHealthResponse check() {
+        try {
+            return jdbc.queryForObject(
+                    SQL,
+                    (rs, n) ->
+                            new DatabaseHealthResponse(
+                                    "UP",
+                                    "Oracle",
+                                    rs.getString("SCHEMA_NAME"),
+                                    rs.getString("CONTAINER_NAME")));
+        } catch (DataAccessException e) {
+            throw new DatabaseUnavailableException(e);
+        }
+    }
+}

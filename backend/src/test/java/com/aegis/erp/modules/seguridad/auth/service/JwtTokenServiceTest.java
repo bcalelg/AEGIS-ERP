@@ -3,7 +3,7 @@ package com.aegis.erp.modules.seguridad.auth.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.aegis.erp.modules.seguridad.usuario.entity.Empresa;
+import com.aegis.erp.modules.seguridad.empresa.entity.Empresa;
 import com.aegis.erp.modules.seguridad.usuario.entity.Role;
 import com.aegis.erp.modules.seguridad.usuario.entity.StatusUsuario;
 import com.aegis.erp.modules.seguridad.usuario.entity.Sucursal;
@@ -32,21 +32,30 @@ class JwtTokenServiceTest {
         Instant now = Instant.now().minusSeconds(5).truncatedTo(ChronoUnit.SECONDS);
         JwtTokenService service = service(Clock.fixed(now, ZoneOffset.UTC), 60);
 
-        JwtTokenService.IssuedToken issued = service.issue(usuario());
+        JwtTokenService.IssuedToken issued = service.issue(usuario(), "session-id");
         var jwt = decoder().decode(issued.value());
 
         assertThat(jwt.getSubject()).isEqualTo("Administrador");
         assertThat(jwt.getClaimAsString("role")).isEqualTo("Administrador");
+        assertThat(jwt.getId()).isEqualTo("session-id");
+        assertThat(jwt.getClaimAsBoolean("password_change_required")).isTrue();
         assertThat(jwt.getIssuedAt()).isEqualTo(now);
         assertThat(Duration.between(jwt.getIssuedAt(), jwt.getExpiresAt())).isEqualTo(Duration.ofMinutes(60));
         assertThat(issued.expiresInSeconds()).isEqualTo(3600);
-        assertThat(jwt.getClaims()).containsOnlyKeys("sub", "role", "iat", "exp");
+        assertThat(jwt.getClaims())
+                .containsOnlyKeys(
+                        "sub",
+                        "role",
+                        "iat",
+                        "exp",
+                        "jti",
+                        "password_change_required");
     }
 
     @Test
     void expiredTokenIsRejected() {
         Clock oldClock = Clock.fixed(Instant.now().minus(Duration.ofHours(2)), ZoneOffset.UTC);
-        String token = service(oldClock, 60).issue(usuario()).value();
+        String token = service(oldClock, 60).issue(usuario(), "session-id").value();
 
         assertThatThrownBy(() -> decoder().decode(token)).isInstanceOf(JwtValidationException.class);
     }

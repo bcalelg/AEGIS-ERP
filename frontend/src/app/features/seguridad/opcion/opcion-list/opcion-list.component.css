@@ -1,0 +1,12 @@
+.opcion-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.opcion-search {
+  max-width: 480px;
+  min-width: 280px;
+  flex: 1;
+}

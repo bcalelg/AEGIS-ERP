@@ -1,0 +1,63 @@
+@if (confirmation.request(); as request) {
+  <div class="confirmation-overlay">
+    <section
+      #dialog
+      class="confirmation-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirmation-title"
+      aria-describedby="confirmation-message confirmation-warning"
+      tabindex="-1"
+      [attr.data-confirmation-type]="request.type"
+    >
+      <button
+        class="btn-close confirmation-close"
+        type="button"
+        aria-label="Cerrar"
+        [disabled]="confirmation.processing()"
+        (click)="confirmation.cancel()"
+      ></button>
+
+      <div class="confirmation-icon" aria-hidden="true">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+
+      <div class="confirmation-copy">
+        <h2 id="confirmation-title">{{ request.title }}</h2>
+        <p id="confirmation-message">{{ request.message }}</p>
+        @if (request.warningText) {
+          <p id="confirmation-warning" class="confirmation-warning">
+            {{ request.warningText }}
+          </p>
+        } @else {
+          <span id="confirmation-warning" class="visually-hidden">Acción destructiva.</span>
+        }
+      </div>
+
+      <div class="confirmation-actions">
+        <button
+          #cancelButton
+          class="btn btn-outline-secondary"
+          type="button"
+          [disabled]="confirmation.processing()"
+          (click)="confirmation.cancel()"
+        >
+          {{ request.cancelText }}
+        </button>
+        <button
+          class="btn btn-danger"
+          type="button"
+          [disabled]="confirmation.processing()"
+          (click)="confirmation.accept()"
+        >
+          @if (confirmation.processing()) {
+            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            Eliminando...
+          } @else {
+            {{ request.confirmText }}
+          }
+        </button>
+      </div>
+    </section>
+  </div>
+}

@@ -1,0 +1,71 @@
+<section class="page-header">
+  <div>
+    <span class="eyebrow">Seguridad / Empresas</span>
+    <h1>{{ selected() ? 'Editar empresa' : 'Nueva empresa' }}</h1>
+    <p>Complete la información general y las políticas corporativas.</p>
+  </div>
+</section>
+<form [formGroup]="form" (ngSubmit)="save()">
+  <div class="card mb-4">
+    <div class="card-header"><h2 class="card-title mb-0">Información general</h2></div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Nombre</label
+          ><input class="form-control" formControlName="nombre" />
+          @if (touched('nombre')) {
+            <div class="text-danger small">
+              El nombre es obligatorio y admite hasta 100 caracteres.
+            </div>
+          }
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">NIT</label><input class="form-control" formControlName="nit" />
+          @if (touched('nit')) {
+            <div class="text-danger small">El NIT es obligatorio y admite hasta 20 caracteres.</div>
+          }
+        </div>
+        <div class="col-12">
+          <label class="form-label">Dirección</label
+          ><input class="form-control" formControlName="direccion" />
+          @if (touched('direccion')) {
+            <div class="text-danger small">
+              La dirección es obligatoria y admite hasta 200 caracteres.
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card mb-4">
+    <div class="card-header"><h2 class="card-title mb-0">Políticas de contraseña</h2></div>
+    <div class="card-body">
+      <div class="row g-3">
+        @for (field of policyFields; track field.key) {
+          <div class="col-md-6 col-xl-3">
+            <label class="form-label">{{ field.label }}</label
+            ><input class="form-control" type="number" min="0" [formControlName]="field.key" />
+            @if (touched(field.key)) {
+              <div class="text-danger small">Ingrese un valor válido.</div>
+            }
+          </div>
+        }
+      </div>
+      @if (form.hasError('passwordPolicy')) {
+        <div class="alert alert-danger mt-3 mb-0">
+          La longitud no puede ser menor que la suma de caracteres requeridos.
+        </div>
+      }
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" type="submit" [disabled]="form.invalid || saving()">
+      @if (saving()) {
+        <span class="spinner-border spinner-border-sm me-2"></span>
+      }
+      Guardar</button
+    ><button class="btn btn-secondary" type="button" [disabled]="saving()" (click)="cancel()">
+      Cancelar
+    </button>
+  </div>
+</form>

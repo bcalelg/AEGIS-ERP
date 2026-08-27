@@ -1,0 +1,37 @@
+<section class="page-header">
+  <div>
+    <span class="eyebrow">Inicio</span>
+    <h1>Dashboard</h1>
+    <p>Bienvenido al centro de operaciones de AEGIS-ERP.</p>
+  </div>
+  <div class="status-chip"><span></span>Sistema disponible</div>
+</section>
+<section class="welcome-card">
+  <div>
+    <span class="eyebrow">Sesión activa</span>
+    <h2>Hola, {{ auth.currentUser()?.nombre }}</h2>
+    <p>
+      Has ingresado como <strong>{{ auth.currentUser()?.role }}</strong
+      >. Utiliza el menú lateral para acceder a las opciones asignadas a tu rol.
+    </p>
+  </div>
+  <div class="welcome-icon"><i class="bi bi-shield-check"></i></div>
+</section>
+<div class="info-grid">
+  <article>
+    <i class="bi bi-person-badge"></i>
+    <div>
+      <span>Usuario</span><strong>{{ auth.currentUser()?.idUsuario }}</strong>
+    </div>
+  </article>
+  <article>
+    <i class="bi bi-key"></i>
+    <div>
+      <span>Rol asignado</span><strong>{{ auth.currentUser()?.role }}</strong>
+    </div>
+  </article>
+  <article>
+    <i class="bi bi-diagram-3"></i>
+    <div><span>Plataforma</span><strong>AEGIS-ERP</strong></div>
+  </article>
+</div>

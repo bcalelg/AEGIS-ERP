@@ -1,0 +1,37 @@
+<section class="card role-form-card mb-4">
+  <div class="card-header">
+    <h2 class="card-title mb-0">{{ selected() ? 'Editar rol' : 'Nuevo rol' }}</h2>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="row g-3 align-items-end">
+        <div class="col-md-8">
+          <label class="form-label" for="role-nombre">Nombre</label>
+          <input
+            id="role-nombre"
+            class="form-control"
+            formControlName="nombre"
+            maxlength="50"
+            autocomplete="off"
+          />
+          @if (showNameError()) {
+            <div class="text-danger small mt-1">
+              El nombre es obligatorio y admite hasta 50 caracteres.
+            </div>
+          }
+        </div>
+        <div class="col-md-4 d-flex gap-2 justify-content-md-end">
+          <button class="btn btn-secondary" type="button" [disabled]="saving()" (click)="cancel()">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" type="submit" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            Guardar
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>

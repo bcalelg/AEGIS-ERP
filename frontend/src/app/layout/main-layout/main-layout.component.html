@@ -1,0 +1,21 @@
+<div class="wrapper" [class.sidebar-open]="sidebarCollapsed()">
+  <div class="mobile-backdrop" (click)="sidebarCollapsed.set(false)"></div>
+  <app-sidebar
+    [modules]="menu.modules()"
+    [user]="auth.currentUser()"
+    [collapsed]="sidebarCollapsed()"
+    (navigate)="sidebarCollapsed.set(false)"
+    (logout)="logout()"
+  />
+  <div class="main">
+    <app-navbar
+      [user]="auth.currentUser()"
+      (toggleMenu)="sidebarCollapsed.update((value) => !value)"
+      (logout)="logout()"
+    />
+    <main class="content">
+      <div class="container-fluid p-0"><router-outlet /></div>
+    </main>
+    <app-footer />
+  </div>
+</div>

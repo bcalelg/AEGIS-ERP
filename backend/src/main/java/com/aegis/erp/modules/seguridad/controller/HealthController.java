@@ -3,6 +3,7 @@ package com.aegis.erp.modules.seguridad.controller;
 import com.aegis.erp.common.response.ApplicationHealthResponse;
 import com.aegis.erp.common.response.DatabaseHealthResponse;
 import com.aegis.erp.modules.seguridad.service.DatabaseHealthService;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

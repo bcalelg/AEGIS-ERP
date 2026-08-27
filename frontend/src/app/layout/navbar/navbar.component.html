@@ -1,0 +1,50 @@
+<header class="navbar navbar-expand navbar-light navbar-bg topbar">
+  <button
+    class="sidebar-toggle navbar-hamburger"
+    type="button"
+    aria-label="Mostrar u ocultar menú lateral"
+    (click)="toggleMenu.emit()"
+  >
+    <i class="hamburger align-self-center"></i>
+  </button>
+  <div class="page-context">
+    <span class="eyebrow">Sistema administrativo</span><strong>Panel principal</strong>
+  </div>
+  <div class="navbar-avatar-menu" (keydown.escape)="dropdownOpen.set(false)">
+    <button
+      class="navbar-avatar-trigger"
+      type="button"
+      aria-label="Abrir menú de usuario"
+      [attr.aria-expanded]="dropdownOpen()"
+      (click)="dropdownOpen.update((open) => !open)"
+    >
+      @if (avatarUrl()) {
+        <img class="avatar avatar-image" [src]="avatarUrl()!" alt="Avatar del usuario" />
+      } @else {
+        <span class="avatar">{{ initials() }}</span>
+      }
+    </button>
+    @if (dropdownOpen()) {
+      <button
+        class="navbar-dropdown-backdrop"
+        type="button"
+        aria-label="Cerrar menú de usuario"
+        (click)="dropdownOpen.set(false)"
+      ></button>
+      <div class="dropdown-menu dropdown-menu-end navbar-user-dropdown show">
+        <a
+          class="dropdown-item"
+          routerLink="/construction/profile"
+          (click)="dropdownOpen.set(false)"
+          ><i class="bi bi-person me-2"></i>Mi perfil</a
+        ><a class="dropdown-item" routerLink="/change-password" (click)="dropdownOpen.set(false)"
+          ><i class="bi bi-key me-2"></i>Cambiar contraseña</a
+        >
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item" type="button" (click)="closeAndLogout()">
+          <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
+        </button>
+      </div>
+    }
+  </div>
+</header>

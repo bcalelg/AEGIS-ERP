@@ -1,0 +1,83 @@
+<aside class="sidebar" [class.collapsed]="collapsed()">
+  <a class="brand" routerLink="/dashboard"
+    ><span class="brand-mark">A</span><span>AEGIS<span class="text-primary">ERP</span></span></a
+  >
+  <div class="sidebar-profile">
+    <button
+      class="sidebar-profile-trigger"
+      type="button"
+      [attr.aria-expanded]="profileOpen()"
+      (click)="profileOpen.update((open) => !open)"
+    >
+      @if (avatarUrl()) {
+        <img class="avatar avatar-image" [src]="avatarUrl()!" alt="Avatar del usuario" />
+      } @else {
+        <span class="avatar">{{ initials() }}</span>
+      }
+      <span class="sidebar-profile-copy"
+        ><strong>{{ displayName() }}</strong
+        ><span>{{ user()?.role }}</span></span
+      ><i class="bi bi-chevron-down profile-chevron" [class.open]="profileOpen()"></i>
+    </button>
+    @if (profileOpen()) {
+      <button
+        class="profile-dropdown-backdrop"
+        type="button"
+        aria-label="Cerrar menú de usuario"
+        (click)="profileOpen.set(false)"
+      ></button>
+      <div class="dropdown-menu sidebar-profile-menu show">
+        <a class="dropdown-item" routerLink="/construction/profile" (click)="closeProfile()"
+          ><i class="bi bi-person me-2"></i>Mi perfil</a
+        ><a class="dropdown-item" routerLink="/change-password" (click)="closeProfile()"
+          ><i class="bi bi-key me-2"></i>Cambiar contraseña</a
+        >
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item" type="button" (click)="closeAndLogout()">
+          <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
+        </button>
+      </div>
+    }
+  </div>
+  <ul class="sidebar-nav">
+    <li class="sidebar-item" routerLinkActive="active">
+      <a class="sidebar-link" routerLink="/dashboard" (click)="navigate.emit()"
+        ><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a
+      >
+    </li>
+    @for (module of modules(); track module.idModulo) {
+      <li class="sidebar-header">{{ module.nombre }}</li>
+      @for (menu of module.menus; track menu.idMenu) {
+        <li class="sidebar-item" [class.active]="isCurrentMenu(menu)">
+          <button
+            class="sidebar-link sidebar-menu-toggle"
+            type="button"
+            [attr.aria-expanded]="isOpen(menu.idMenu)"
+            (click)="toggle(menu.idMenu)"
+          >
+            <span>{{ menu.nombre }}</span
+            ><i class="bi bi-chevron-right sidebar-chevron" [class.open]="isOpen(menu.idMenu)"></i>
+          </button>
+          @if (isOpen(menu.idMenu)) {
+            <ul class="sidebar-dropdown list-unstyled">
+              @for (option of menu.opciones; track option.idOpcion) {
+                <li class="sidebar-item" routerLinkActive="active">
+                  <a
+                    class="sidebar-link"
+                    [routerLink]="optionRoute(option.pagina)"
+                    (click)="navigate.emit()"
+                    >{{ option.nombre }}</a
+                  >
+                </li>
+              }
+            </ul>
+          }
+        </li>
+      }
+    } @empty {
+      <li class="empty-menu">
+        <i class="bi bi-shield-check"></i><span>Tu rol no tiene opciones asignadas.</span>
+      </li>
+    }
+  </ul>
+</aside>

@@ -1,16 +1,18 @@
 package com.aegis.erp.modules.seguridad.auth.service;
 
 import com.aegis.erp.modules.seguridad.usuario.entity.Usuario;
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
-import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.stereotype.Service;
+
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 
 @Service
 public class JwtTokenService {
@@ -30,15 +32,20 @@ public class JwtTokenService {
         this.expiration = Duration.ofMinutes(expirationMinutes);
     }
 
-    public IssuedToken issue(Usuario usuario) {
+    public IssuedToken issue(Usuario usuario, String identificadorSesion) {
         Instant issuedAt = clock.instant();
         Instant expiresAt = issuedAt.plus(expiration);
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .subject(usuario.getIdUsuario())
-                .issuedAt(issuedAt)
-                .expiresAt(expiresAt)
-                .claim("role", usuario.getRole().getNombre())
-                .build();
+        JwtClaimsSet claims =
+                JwtClaimsSet.builder()
+                        .subject(usuario.getIdUsuario())
+                        .issuedAt(issuedAt)
+                        .expiresAt(expiresAt)
+                        .id(identificadorSesion)
+                        .claim("role", usuario.getRole().getNombre())
+                        .claim(
+                                "password_change_required",
+                                Integer.valueOf(1).equals(usuario.getRequiereCambiarPassword()))
+                        .build();
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         String value = encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
         return new IssuedToken(value, expiration.toSeconds());

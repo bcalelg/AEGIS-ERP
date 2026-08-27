@@ -1,0 +1,66 @@
+<section class="card menu-form-card mb-4">
+  <div class="card-header">
+    <h2 class="card-title mb-0">{{ selected() ? 'Editar menú' : 'Nuevo menú' }}</h2>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label" for="menu-modulo">Módulo</label>
+          <select id="menu-modulo" class="form-select" formControlName="idModulo">
+            <option [ngValue]="0">Seleccione un módulo</option>
+            @for (module of modules(); track module.id) {
+              <option [ngValue]="module.id">{{ module.nombre }}</option>
+            }
+          </select>
+          @if (invalid('idModulo')) {
+            <div class="text-danger small mt-1">Seleccione un módulo.</div>
+          }
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="menu-nombre">Nombre</label>
+          <input
+            id="menu-nombre"
+            class="form-control"
+            formControlName="nombre"
+            maxlength="50"
+            autocomplete="off"
+          />
+          @if (invalid('nombre')) {
+            <div class="text-danger small mt-1">
+              El nombre es obligatorio y admite hasta 50 caracteres.
+            </div>
+          }
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="menu-orden">Orden</label>
+          <input
+            id="menu-orden"
+            class="form-control"
+            type="number"
+            min="1"
+            step="1"
+            formControlName="orden"
+          />
+          @if (invalid('orden')) {
+            <div class="text-danger small mt-1">El orden debe ser mayor que cero.</div>
+          }
+        </div>
+        <div class="col-md-3 d-flex gap-2 justify-content-md-end">
+          <button class="btn btn-secondary" type="button" [disabled]="saving()" (click)="cancel()">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" type="submit" [disabled]="saving() || loadingModules()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            Guardar
+          </button>
+        </div>
+      </div>
+      @if (error()) {
+        <div class="alert alert-danger mt-3 mb-0">{{ error() }}</div>
+      }
+    </form>
+  </div>
+</section>

@@ -1,0 +1,74 @@
+<section class="card opcion-form-card mb-4">
+  <div class="card-header">
+    <h2 class="card-title mb-0">{{ selected() ? 'Editar opción' : 'Nueva opción' }}</h2>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="row g-3 align-items-end">
+        <div class="col-lg-4">
+          <label class="form-label" for="opcion-menu">Menú</label>
+          <select id="opcion-menu" class="form-select" formControlName="idMenu">
+            <option [ngValue]="0">Seleccione un menú</option>
+            @for (menu of menus(); track menu.id) {
+              <option [ngValue]="menu.id">{{ menu.modulo }} / {{ menu.nombre }}</option>
+            }
+          </select>
+          @if (invalid('idMenu')) {
+            <div class="text-danger small mt-1">Seleccione un menú.</div>
+          }
+        </div>
+        <div class="col-lg-2 col-md-4">
+          <label class="form-label" for="opcion-nombre">Nombre</label>
+          <input id="opcion-nombre" class="form-control" formControlName="nombre" maxlength="50" />
+          @if (invalid('nombre')) {
+            <div class="text-danger small mt-1">Nombre obligatorio, máximo 50 caracteres.</div>
+          }
+        </div>
+        <div class="col-lg-2 col-md-4">
+          <label class="form-label" for="opcion-pagina">Página</label>
+          <input
+            id="opcion-pagina"
+            class="form-control"
+            formControlName="pagina"
+            maxlength="100"
+            [readOnly]="selected() !== null"
+          />
+          @if (invalid('pagina')) {
+            <div class="text-danger small mt-1">Página obligatoria, máximo 100 caracteres.</div>
+          }
+          @if (selected()) {
+            <div class="form-text">La página es un identificador técnico y no puede modificarse después de crear la opción.</div>
+          }
+        </div>
+        <div class="col-lg-1 col-md-4">
+          <label class="form-label" for="opcion-orden">Orden</label>
+          <input
+            id="opcion-orden"
+            class="form-control"
+            type="number"
+            min="1"
+            step="1"
+            formControlName="orden"
+          />
+          @if (invalid('orden')) {
+            <div class="text-danger small mt-1">Debe ser mayor que cero.</div>
+          }
+        </div>
+        <div class="col-lg-3 d-flex gap-2 justify-content-lg-end">
+          <button class="btn btn-secondary" type="button" [disabled]="saving()" (click)="cancel()">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" type="submit" [disabled]="saving() || loadingMenus()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            Guardar
+          </button>
+        </div>
+      </div>
+      @if (error()) {
+        <div class="alert alert-danger mt-3 mb-0">{{ error() }}</div>
+      }
+    </form>
+  </div>
+</section>

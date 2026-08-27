@@ -1,0 +1,30 @@
+<div class="notification-container" aria-label="Notificaciones">
+  @for (item of notification.notifications(); track item.id) {
+    <div
+      class="toast show notification-toast"
+      [class]="cssClass(item)"
+      [attr.role]="item.type === 'error' || item.type === 'warning' ? 'alert' : 'status'"
+      [attr.aria-live]="item.type === 'error' || item.type === 'warning' ? 'assertive' : 'polite'"
+      aria-atomic="true"
+      [attr.data-notification-type]="item.type"
+    >
+      <div class="notification-content">
+        <span class="notification-icon-shell" aria-hidden="true">
+          <i class="bi notification-icon" [class]="icon(item)"></i>
+        </span>
+        <div class="notification-message">
+          <p>
+            <span class="visually-hidden">{{ label(item) }}:</span>
+            {{ item.message }}
+          </p>
+        </div>
+        <button
+          class="btn-close notification-close"
+          type="button"
+          aria-label="Cerrar notificación"
+          (click)="notification.dismiss(item.id)"
+        ></button>
+      </div>
+    </div>
+  }
+</div>

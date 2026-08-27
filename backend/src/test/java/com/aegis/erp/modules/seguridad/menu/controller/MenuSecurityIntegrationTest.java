@@ -19,11 +19,13 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(MenuController.class)
-@Import({MenuController.class,MenuSecurityIntegrationTest.TestSecuritySupport.class,SecurityConfig.class,JwtConfig.class,RestAuthenticationEntryPoint.class})
+@Import({MenuController.class,MenuSecurityIntegrationTest.TestSecuritySupport.class,SecurityConfig.class,JwtConfig.class,RestAuthenticationEntryPoint.class,JwtCookieService.class,RestAccessDeniedHandler.class})
 @TestPropertySource(properties="jwt.secret=test-only-secret-with-at-least-32-bytes-long")
 class MenuSecurityIntegrationTest {
 @TestConfiguration @EnableWebSecurity static class TestSecuritySupport{}
 @Autowired MockMvc mvc;@Autowired JwtEncoder encoder;@MockitoBean MenuService menuService;
 @Test void menuWithoutTokenReturns401()throws Exception{mvc.perform(get("/api/security/menu")).andExpect(status().isUnauthorized());}
-@Test void validJwtUsesSubjectAndReturnsMenu()throws Exception{var response=new ModuloMenuResponse(1L,"Seguridad",1,List.of(new MenuResponse(1L,"Parametros Generales",1,List.of(new OpcionResponse(1L,"Empresas","empresa.php",1,new PermisosResponse(true,true,true,true,true,true))))));when(menuService.findMenuForUser("Administrador")).thenReturn(List.of(response));mvc.perform(get("/api/security/menu").header("Authorization","Bearer "+token("Administrador"))).andExpect(status().isOk()).andExpect(jsonPath("$[0].menus[0].opciones[0].nombre").value("Empresas")).andExpect(jsonPath("$[0].menus[0].opciones[0].permisos.consultar").value(true));}
-private String token(String subject){Instant now=Instant.now();var claims=JwtClaimsSet.builder().subject(subject).issuedAt(now).expiresAt(now.plusSeconds(3600)).claim("role","Administrador").build();return encoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(),claims)).getTokenValue();}}
+@Test void validJwtUsesSubjectAndReturnsMenu()throws Exception{var response=new ModuloMenuResponse(1L,"Seguridad",1,List.of(new MenuResponse(1L,"Parametros Generales",1,List.of(new OpcionResponse(1L,"Empresas","empresa",1,new PermisosResponse(true,true,true,true,true,true))))));when(menuService.findMenuForUser("Administrador")).thenReturn(List.of(response));mvc.perform(get("/api/security/menu").cookie(new jakarta.servlet.http.Cookie("AEGIS_ACCESS_TOKEN",token("Administrador")))).andExpect(status().isOk()).andExpect(jsonPath("$[0].menus[0].opciones[0].nombre").value("Empresas")).andExpect(jsonPath("$[0].menus[0].opciones[0].permisos.consultar").value(true));}
+@Test void passwordChangeRequiredBlocksMenu()throws Exception{mvc.perform(get("/api/security/menu").cookie(new jakarta.servlet.http.Cookie("AEGIS_ACCESS_TOKEN",token("Administrador",true)))).andExpect(status().isForbidden());}
+private String token(String subject){return token(subject,false);}
+private String token(String subject,boolean required){Instant now=Instant.now();var claims=JwtClaimsSet.builder().subject(subject).issuedAt(now).expiresAt(now.plusSeconds(3600)).id("session-id").claim("role","Administrador").claim("password_change_required",required).build();return encoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(),claims)).getTokenValue();}}

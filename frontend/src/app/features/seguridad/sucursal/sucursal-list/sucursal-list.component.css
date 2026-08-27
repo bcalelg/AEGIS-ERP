@@ -1,0 +1,12 @@
+.sucursal-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.sucursal-search {
+  max-width: 420px;
+  min-width: 260px;
+  flex: 1;
+}

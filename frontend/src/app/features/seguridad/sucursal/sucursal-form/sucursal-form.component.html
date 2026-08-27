@@ -1,0 +1,76 @@
+<section class="card sucursal-form-card mb-4">
+  <div class="card-header">
+    <h2 class="card-title mb-0">{{ selected() ? 'Editar sucursal' : 'Nueva sucursal' }}</h2>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="row g-3 align-items-start">
+        <div class="col-md-4">
+          <label class="form-label" for="sucursal-empresa">Empresa</label>
+          <select id="sucursal-empresa" class="form-select" formControlName="idEmpresa">
+            <option [ngValue]="0">Seleccione una empresa</option>
+            @for (company of companies(); track company.id) {
+              <option [ngValue]="company.id">{{ company.nombre }}</option>
+            }
+          </select>
+          @if (loadingCompanies()) {
+            <small class="text-muted">Cargando empresas…</small>
+          } @else if (companies().length === 0) {
+            <div class="text-warning small mt-1">No existen empresas disponibles.</div>
+          }
+          @if (invalid('idEmpresa')) {
+            <div class="text-danger small mt-1">Debe seleccionar una empresa.</div>
+          }
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="sucursal-nombre">Nombre</label>
+          <input
+            id="sucursal-nombre"
+            class="form-control"
+            formControlName="nombre"
+            maxlength="100"
+            autocomplete="off"
+          />
+          @if (invalid('nombre')) {
+            <div class="text-danger small mt-1">
+              El nombre es obligatorio y admite hasta 100 caracteres.
+            </div>
+          }
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="sucursal-direccion">Dirección</label>
+          <input
+            id="sucursal-direccion"
+            class="form-control"
+            formControlName="direccion"
+            maxlength="200"
+            autocomplete="off"
+          />
+          @if (invalid('direccion')) {
+            <div class="text-danger small mt-1">
+              La dirección es obligatoria y admite hasta 200 caracteres.
+            </div>
+          }
+        </div>
+      </div>
+      <div class="d-flex gap-2 justify-content-end mt-3">
+        <button class="btn btn-secondary" type="button" [disabled]="saving()" (click)="cancel()">
+          Cancelar
+        </button>
+        <button
+          class="btn btn-primary"
+          type="submit"
+          [disabled]="saving() || loadingCompanies() || companies().length === 0"
+        >
+          @if (saving()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+          }
+          Guardar
+        </button>
+      </div>
+      @if (error()) {
+        <div class="alert alert-danger mt-3 mb-0">{{ error() }}</div>
+      }
+    </form>
+  </div>
+</section>
