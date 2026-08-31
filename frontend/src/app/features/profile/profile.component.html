@@ -1,0 +1,87 @@
+<section class="page-header">
+  <div>
+    <span class="eyebrow">Cuenta personal</span>
+    <h1>Mi perfil</h1>
+    <p>Administra tus datos personales y la fotografía mostrada en AEGIS-ERP.</p>
+  </div>
+  <a class="btn btn-outline-secondary" routerLink="/change-password">
+    <i class="bi bi-key me-2"></i>Cambiar contraseña
+  </a>
+</section>
+
+@if (loading()) {
+  <div class="card"><div class="card-body text-center py-5"><span class="spinner-border"></span></div></div>
+} @else if (profile(); as current) {
+  <div class="profile-grid">
+    <section class="card photo-card">
+      <div class="card-body">
+        <h2>Fotografía</h2>
+        <div class="profile-avatar">
+          @if (previewUrl() || avatarUrl()) {
+            <img [src]="previewUrl() || avatarUrl()!" alt="Vista previa de la fotografía" />
+          } @else {
+            <span>{{ initials() }}</span>
+          }
+        </div>
+        <label class="btn btn-outline-primary photo-selector">
+          <i class="bi bi-image me-2"></i>Seleccionar fotografía
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            (change)="selectPhoto($event)"
+          />
+        </label>
+        @if (selectedPhoto(); as file) {
+          <p class="file-info">{{ file.name }} · {{ (file.size / 1024).toFixed(0) }} KB</p>
+          <button class="btn btn-primary" type="button" [disabled]="photoSaving()" (click)="savePhoto()">
+            Guardar fotografía
+          </button>
+        }
+        @if (current.fotografiaDisponible) {
+          <button class="btn btn-link text-danger" type="button" [disabled]="photoSaving()" (click)="deletePhoto()">
+            Quitar fotografía
+          </button>
+        }
+        @if (photoError()) {
+          <p class="text-danger photo-error">{{ photoError() }}</p>
+        }
+        <small>JPEG, PNG o WebP. Tamaño máximo: 2 MB.</small>
+      </div>
+    </section>
+
+    <form class="card" [formGroup]="form" (ngSubmit)="save()">
+      <div class="card-body">
+        <h2>Información personal</h2>
+        <div class="readonly-grid">
+          <div><span>Nombre</span><strong>{{ current.nombre }}</strong></div>
+          <div><span>Apellidos</span><strong>{{ current.apellido }}</strong></div>
+          <div><span>Fecha de nacimiento</span><strong>{{ current.fechaNacimiento }}</strong></div>
+          <div><span>Género</span><strong>{{ current.genero }}</strong></div>
+        </div>
+
+        <h2 class="organization-title">Información de contacto</h2>
+        <div class="form-grid">
+          <label>Correo electrónico<input class="form-control" type="email" formControlName="correoElectronico" /></label>
+          <label>Teléfono móvil<input class="form-control" formControlName="telefonoMovil" /></label>
+        </div>
+        @if (form.invalid && form.touched) {
+          <p class="text-danger validation-message">Revise los datos personales ingresados.</p>
+        }
+
+        <h2 class="organization-title">Información de cuenta y organización</h2>
+        <div class="readonly-grid">
+          <div><span>Usuario</span><strong>{{ current.idUsuario }}</strong><small>Identificador administrado por el sistema</small></div>
+          <div><span>Empresa</span><strong>{{ current.empresa }}</strong></div>
+          <div><span>Sucursal</span><strong>{{ current.sucursal }}</strong></div>
+          <div><span>Rol</span><strong>{{ current.role }}</strong></div>
+          <div><span>Estatus</span><strong>{{ current.estatus }}</strong></div>
+        </div>
+      </div>
+      <div class="card-footer profile-actions">
+        <button class="btn btn-primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}

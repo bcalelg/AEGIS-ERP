@@ -2,12 +2,19 @@ package com.aegis.erp.common.exception;
 
 import org.springframework.http.*;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     @ExceptionHandler(InvalidCredentialsException.class)
     ProblemDetail invalidCredentials(InvalidCredentialsException e) {
         return problem(
@@ -28,6 +35,15 @@ public class GlobalExceptionHandler {
         return p;
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ProblemDetail unreadableRequest(HttpMessageNotReadableException e) {
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "La solicitud contiene campos o contenido no permitido.",
+                "Solicitud inválida",
+                "invalid-request");
+    }
+
     @ExceptionHandler(InvalidPasswordChangeException.class)
     ProblemDetail invalidPasswordChange(InvalidPasswordChangeException e) {
         return problem(
@@ -46,9 +62,36 @@ public class GlobalExceptionHandler {
                 "invalid-password-reset-token");
     }
 
+    @ExceptionHandler(InvalidProfilePhotoException.class)
+    ProblemDetail invalidProfilePhoto(InvalidProfilePhotoException e) {
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                e.getMessage(),
+                "Fotografía inválida",
+                "invalid-profile-photo");
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    ProblemDetail maxUploadSize(MaxUploadSizeExceededException e) {
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "La fotografía no puede exceder 2 MB.",
+                "Fotografía inválida",
+                "invalid-profile-photo");
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     ProblemDetail notFound(ResourceNotFoundException e) {
         return problem(HttpStatus.NOT_FOUND, e.getMessage(), "Recurso no encontrado", "not-found");
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    ProblemDetail noResource(NoResourceFoundException e) {
+        return problem(
+                HttpStatus.NOT_FOUND,
+                "El recurso solicitado no existe.",
+                "Recurso no encontrado",
+                "not-found");
     }
 
     @ExceptionHandler(BusinessConflictException.class)
@@ -76,11 +119,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     ProblemDetail unexpected(Exception e) {
-        return problem(
+        String correlationId = UUID.randomUUID().toString();
+        log.error(
+                "Excepción no controlada. correlationId={} cause={}",
+                correlationId,
+                e.getClass().getName(),
+                e);
+        ProblemDetail response = problem(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Ocurrió un error interno inesperado.",
                 "Error interno",
                 "internal-error");
+        response.setProperty("correlationId", correlationId);
+        return response;
     }
 
     private ProblemDetail problem(HttpStatus status, String detail, String title, String type) {

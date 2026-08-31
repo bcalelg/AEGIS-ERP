@@ -11,6 +11,8 @@ import com.aegis.erp.modules.seguridad.usuario.repository.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -18,6 +20,7 @@ import java.util.UUID;
 
 @Service
 public class AuthenticationService {
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationService.class);
     static final String ACTIVO = "Activo",
             INACTIVO = "Inactivo",
             BLOQUEADO = "Bloqueado por intentos de acceso";
@@ -56,21 +59,17 @@ public class AuthenticationService {
     public AuthenticatedLogin login(LoginRequest request, LoginClientContext context) {
         Usuario usuario = usuarios.findForAuthentication(request.idUsuario()).orElse(null);
         if (usuario == null) {
-            audit.registrar(request.idUsuario(), USUARIO_NO_EXISTE, context);
-            throw new InvalidCredentialsException();
+            reject(request.idUsuario(), USUARIO_NO_EXISTE, context);
         }
         String estado = usuario.getStatus().getNombre();
         if (INACTIVO.equals(estado)) {
-            audit.registrar(request.idUsuario(), USUARIO_INACTIVO, context);
-            throw new InvalidCredentialsException();
+            reject(request.idUsuario(), USUARIO_INACTIVO, context);
         }
         if (BLOQUEADO.equals(estado)) {
-            audit.registrar(request.idUsuario(), INTENTOS_EXCEDIDOS, context);
-            throw new InvalidCredentialsException();
+            reject(request.idUsuario(), INTENTOS_EXCEDIDOS, context);
         }
         if (!ACTIVO.equals(estado)) {
-            audit.registrar(request.idUsuario(), USUARIO_INACTIVO, context);
-            throw new InvalidCredentialsException();
+            reject(request.idUsuario(), USUARIO_INACTIVO, context);
         }
         if (!encoder.matches(request.password(), usuario.getPasswordHash())) {
             registrarPasswordIncorrecto(usuario, context);
@@ -174,5 +173,19 @@ public class AuthenticationService {
         } else {
             audit.registrar(usuario.getIdUsuario(), PASSWORD_INCORRECTO, context);
         }
+    }
+
+    private void reject(String idUsuario, String event, LoginClientContext context) {
+        try {
+            audit.registrar(idUsuario, event, context);
+        } catch (RuntimeException exception) {
+            // La auditoría no debe convertir credenciales inválidas en un error 500 ni revelar
+            // el identificador proporcionado por el cliente en los logs.
+            log.error(
+                    "No fue posible registrar un acceso rechazado. event={} cause={}",
+                    event,
+                    exception.getClass().getSimpleName());
+        }
+        throw new InvalidCredentialsException();
     }
 }

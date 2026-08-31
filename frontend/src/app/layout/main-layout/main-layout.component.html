@@ -3,6 +3,7 @@
   <app-sidebar
     [modules]="menu.modules()"
     [user]="auth.currentUser()"
+    [avatarUrl]="profile.avatarUrl()"
     [collapsed]="sidebarCollapsed()"
     (navigate)="sidebarCollapsed.set(false)"
     (logout)="logout()"
@@ -10,6 +11,7 @@
   <div class="main">
     <app-navbar
       [user]="auth.currentUser()"
+      [avatarUrl]="profile.avatarUrl()"
       (toggleMenu)="sidebarCollapsed.update((value) => !value)"
       (logout)="logout()"
     />

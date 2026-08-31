@@ -210,6 +210,10 @@ public class Usuario {
         return telefonoMovil;
     }
 
+    public byte[] getFotografia() {
+        return fotografia;
+    }
+
     public String getPregunta() {
         return pregunta;
     }
@@ -296,6 +300,22 @@ public class Usuario {
         sesionActual = null;
         this.usuarioModificacion = usuarioModificacion;
         this.fechaModificacion = fecha;
+    }
+
+    public void modificarPerfil(
+            String correoElectronico,
+            String telefonoMovil,
+            LocalDateTime fechaModificacion) {
+        this.correoElectronico = correoElectronico;
+        this.telefonoMovil = telefonoMovil;
+        this.usuarioModificacion = idUsuario;
+        this.fechaModificacion = fechaModificacion;
+    }
+
+    public void cambiarFotografia(byte[] fotografia, LocalDateTime fechaModificacion) {
+        this.fotografia = fotografia;
+        this.usuarioModificacion = idUsuario;
+        this.fechaModificacion = fechaModificacion;
     }
 
     public boolean cerrarSesion(String identificadorSesion) {

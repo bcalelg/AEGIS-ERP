@@ -78,6 +78,12 @@ El logout auditado requiere que el catálogo real `TIPO_ACCESO` contenga exactam
 
 Temporalmente se conserva una sola pregunta y respuesta, pero no participa en la recuperación por correo. No se creó ninguna tabla ni se reutilizó una columna existente para almacenar tokens.
 
+## Mi Perfil
+
+El autoservicio autenticado utiliza `GET/PUT /api/security/profile` y `GET/PUT/DELETE /api/security/profile/photo`. La identidad siempre procede del JWT validado; no se recibe un identificador de usuario desde el cliente y no se requieren permisos administrativos del mantenimiento Usuarios. El `PUT` del perfil acepta exclusivamente correo electrónico y teléfono móvil; propiedades adicionales se rechazan con HTTP 400 para impedir *mass assignment*.
+
+La fotografía se almacena en `USUARIO.FOTOGRAFIA` (`BLOB`) y se entrega como respuesta binaria con `Cache-Control: no-store`. Se aceptan JPEG, PNG y WebP hasta 2 MB después de validar MIME y firma binaria. La fotografía y cualquier Base64 permanecen fuera del JWT.
+
 ## Estándar de formato
 
 El código Java nuevo debe mantenerse formateado y legible: anotaciones y atributos en líneas separadas, métodos claramente delimitados, parámetros largos distribuidos verticalmente y una instrucción por línea. Este estándar aplica a los próximos CRUD sin modificar la arquitectura Spring Boot existente.

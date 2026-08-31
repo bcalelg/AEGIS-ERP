@@ -17,9 +17,31 @@ describe('NavbarComponent user menu', () => {
     const element = fixture.nativeElement as HTMLElement;
     const links = Array.from(element.querySelectorAll<HTMLAnchorElement>('a.dropdown-item'));
     const changePassword = links.find((link) => link.textContent?.includes('Cambiar contraseña'));
+    const profile = links.find((link) => link.textContent?.includes('Mi perfil'));
 
+    expect(profile?.getAttribute('href')).toBe('/profile');
     expect(changePassword?.getAttribute('href')).toBe('/change-password');
     expect(changePassword?.getAttribute('href')).not.toContain('construction');
     expect(element.textContent).toContain('Cerrar sesión');
+  });
+
+  it('muestra fotografía cuando existe e iniciales como fallback', () => {
+    const fixture = TestBed.createComponent(NavbarComponent);
+    fixture.componentRef.setInput('user', {
+      idUsuario: 'admin',
+      nombre: 'Administrador',
+      apellido: 'IT',
+      role: 'Administrador',
+      requiereCambiarPassword: false,
+    });
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('AI');
+    expect((fixture.nativeElement as HTMLElement).querySelector('img.avatar')).toBeNull();
+
+    fixture.componentRef.setInput('avatarUrl', 'blob:profile-photo');
+    fixture.detectChanges();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLImageElement>('img.avatar')?.src,
+    ).toContain('blob:profile-photo');
   });
 });

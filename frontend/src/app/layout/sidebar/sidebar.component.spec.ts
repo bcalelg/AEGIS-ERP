@@ -17,7 +17,9 @@ describe('SidebarComponent user menu', () => {
     const element = fixture.nativeElement as HTMLElement;
     const links = Array.from(element.querySelectorAll<HTMLAnchorElement>('a.dropdown-item'));
     const changePassword = links.find((link) => link.textContent?.includes('Cambiar contraseña'));
+    const profile = links.find((link) => link.textContent?.includes('Mi perfil'));
 
+    expect(profile?.getAttribute('href')).toBe('/profile');
     expect(changePassword?.getAttribute('href')).toBe('/change-password');
     expect(changePassword?.getAttribute('href')).not.toContain('construction');
     expect(element.textContent).toContain('Cerrar sesión');
