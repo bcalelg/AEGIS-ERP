@@ -153,6 +153,48 @@ class UsuarioMaintenanceServiceTest {
     }
 
     @Test
+    void fuerzaCambioIndividualEInvalidaSesion() {
+        Usuario existing = existing("NUEVO");
+        existing.registrarIngreso(LocalDateTime.now(clock), "sesion-activa");
+        when(usuarios.findForMaintenance("NUEVO")).thenReturn(Optional.of(existing));
+        when(usuarios.saveAndFlush(existing)).thenReturn(existing);
+
+        PasswordChangeRequirementResponse response =
+                service.requerirCambioPassword("NUEVO", "Administrador");
+
+        assertThat(response.usuariosAfectados()).isEqualTo(1);
+        assertThat(existing.getRequiereCambiarPassword()).isEqualTo(1);
+        assertThat(existing.getSesionActual()).isNull();
+    }
+
+    @Test
+    void rechazaForzarCambioSobreLaCuentaEjecutora() {
+        assertThatThrownBy(() -> service.requerirCambioPassword("Administrador", "administrador"))
+                .isInstanceOf(BusinessConflictException.class)
+                .hasMessageContaining("propia cuenta");
+        verify(usuarios, never()).findForMaintenance(anyString());
+    }
+
+    @Test
+    void fuerzaCambioPorEmpresaYExcluyeAlEjecutor() {
+        Usuario actor = existing("Administrador");
+        Usuario affected = existing("OPERADOR");
+        actor.registrarIngreso(LocalDateTime.now(clock), "sesion-admin");
+        affected.registrarIngreso(LocalDateTime.now(clock), "sesion-operador");
+        when(empresas.findById(1L)).thenReturn(Optional.of(empresa));
+        when(usuarios.findAllByEmpresaForPasswordChange(1L)).thenReturn(List.of(actor, affected));
+
+        PasswordChangeRequirementResponse response =
+                service.requerirCambioPasswordEmpresa(1L, "Administrador");
+
+        assertThat(response.usuariosAfectados()).isEqualTo(1);
+        assertThat(response.usuarioEjecutorExcluido()).isTrue();
+        assertThat(actor.getSesionActual()).isEqualTo("sesion-admin");
+        assertThat(affected.getSesionActual()).isNull();
+        verify(usuarios).saveAll(List.of(affected));
+    }
+
+    @Test
     void exportacionEsSeguraYFiltrable() {
         Usuario existing = existing();
         when(usuarios.findAllForMaintenance()).thenReturn(List.of(existing));
@@ -177,8 +219,12 @@ class UsuarioMaintenanceServiceTest {
     }
 
     private Usuario existing() {
+        return existing("NUEVO");
+    }
+
+    private Usuario existing(String idUsuario) {
         return Usuario.crear(
-                "NUEVO", "Ana", "López", LocalDate.of(1990, 1, 1),
+                idUsuario, "Ana", "López", LocalDate.of(1990, 1, 1),
                 new BCryptPasswordEncoder().encode("Temporal12!"), "ana@example.com", "555-1000",
                 "Pregunta", "Respuesta privada", genero, status, role, sucursal,
                 "system", LocalDateTime.now(clock));

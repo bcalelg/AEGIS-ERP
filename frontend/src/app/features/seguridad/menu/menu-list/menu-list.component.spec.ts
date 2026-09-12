@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NEVER, of } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Permisos } from '../../../../core/models/menu.models';
+import { ConfirmationService } from '../../../../core/confirmation/confirmation.service';
 import { NotificationService } from '../../../../core/notifications/notification.service';
 import { PermissionService } from '../../../../core/services/permission.service';
+import { MenuService } from '../../../../core/services/menu.service';
 import { MenuMaintenanceService } from '../services/menu-maintenance.service';
 import { MenuListComponent } from './menu-list.component';
 
@@ -20,6 +22,9 @@ describe('MenuListComponent', () => {
     exportPdf: vi.fn(() => NEVER),
     exportCsv: vi.fn(() => NEVER),
   };
+  const notification = { success: vi.fn(), operationError: vi.fn() };
+  const confirmation = { confirm: vi.fn(() => Promise.resolve(true)), complete: vi.fn() };
+  const navigationMenu = { refresh: vi.fn() };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -36,7 +41,9 @@ describe('MenuListComponent', () => {
       providers: [
         { provide: MenuMaintenanceService, useValue: service },
         { provide: PermissionService, useValue: { forPage: () => permissions } },
-        { provide: NotificationService, useValue: { operationError: vi.fn() } },
+        { provide: NotificationService, useValue: notification },
+        { provide: ConfirmationService, useValue: confirmation },
+        { provide: MenuService, useValue: navigationMenu },
       ],
     }).compileComponents();
   });
@@ -47,16 +54,32 @@ describe('MenuListComponent', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
-  it('no expone Eliminar aun con BAJA y muestra Editar únicamente con CAMBIO', () => {
+  it('muestra Eliminar con BAJA y Editar únicamente con CAMBIO', () => {
     let element = render();
-    expect(element.textContent).not.toContain('Eliminar');
+    expect(element.textContent).toContain('Eliminar');
     expect(element.textContent).not.toContain('Editar');
     fixture.destroy();
 
     permissions.cambio = true;
     element = render();
     expect(element.textContent).toContain('Editar');
-    expect(element.textContent).not.toContain('Eliminar');
+    expect(element.textContent).toContain('Eliminar');
+  });
+
+  it('confirma el DELETE y presenta mediante notificación los conflictos', async () => {
+    const item = { id: 1, idModulo: 1, nombreModulo: 'Seguridad', nombre: 'Catálogos', orden: 1 };
+    render();
+    await fixture.componentInstance.confirmRemove(item);
+    expect(service.delete).toHaveBeenCalledWith(1);
+    expect(notification.success).toHaveBeenCalledWith('Menú eliminado correctamente.');
+    expect(navigationMenu.refresh).toHaveBeenCalled();
+
+    service.delete.mockReturnValueOnce(throwError(() => ({ error: { detail: 'Posee opciones.' } })));
+    fixture.componentInstance.remove(item);
+    expect(notification.operationError).toHaveBeenCalledWith(
+      expect.anything(),
+      'No fue posible eliminar el menú.',
+    );
   });
 
   it('respeta ALTA, IMPRIMIR y EXPORTAR', () => {

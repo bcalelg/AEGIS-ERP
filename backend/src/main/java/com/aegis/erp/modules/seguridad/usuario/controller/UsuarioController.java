@@ -62,6 +62,20 @@ public class UsuarioController {
         return service.modificar(id, request, authentication.getName());
     }
 
+    @PostMapping("/{id}/require-password-change")
+    @PreAuthorize("@permissionAuthorizationService.allowed(authentication.name,'usuario','CAMBIO')")
+    public PasswordChangeRequirementResponse requerirCambioPassword(
+            @PathVariable String id, JwtAuthenticationToken authentication) {
+        return service.requerirCambioPassword(id, authentication.getName());
+    }
+
+    @PostMapping("/require-password-change/by-company/{idEmpresa}")
+    @PreAuthorize("@permissionAuthorizationService.allowed(authentication.name,'usuario','CAMBIO')")
+    public PasswordChangeRequirementResponse requerirCambioPasswordEmpresa(
+            @PathVariable Long idEmpresa, JwtAuthenticationToken authentication) {
+        return service.requerirCambioPasswordEmpresa(idEmpresa, authentication.getName());
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("@permissionAuthorizationService.allowed(authentication.name,'usuario','BAJA')")

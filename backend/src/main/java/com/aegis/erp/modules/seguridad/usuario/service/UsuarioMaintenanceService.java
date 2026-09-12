@@ -179,6 +179,33 @@ public class UsuarioMaintenanceService {
         }
     }
 
+    @Transactional
+    public PasswordChangeRequirementResponse requerirCambioPassword(String id, String actor) {
+        if (id.equalsIgnoreCase(actor)) {
+            throw new BusinessConflictException(
+                    "No puede forzar el cambio de contraseña de su propia cuenta durante la sesión actual.");
+        }
+        Usuario usuario = find(id);
+        usuario.requerirCambioPasswordEInvalidarSesion();
+        usuarios.saveAndFlush(usuario);
+        return new PasswordChangeRequirementResponse(1, false);
+    }
+
+    @Transactional
+    public PasswordChangeRequirementResponse requerirCambioPasswordEmpresa(Long idEmpresa, String actor) {
+        findEmpresa(idEmpresa);
+        List<Usuario> candidatos = usuarios.findAllByEmpresaForPasswordChange(idEmpresa);
+        boolean actorExcluido = candidatos.stream()
+                .anyMatch(usuario -> usuario.getIdUsuario().equalsIgnoreCase(actor));
+        List<Usuario> afectados = candidatos.stream()
+                .filter(usuario -> !usuario.getIdUsuario().equalsIgnoreCase(actor))
+                .toList();
+        afectados.forEach(Usuario::requerirCambioPasswordEInvalidarSesion);
+        usuarios.saveAll(afectados);
+        usuarios.flush();
+        return new PasswordChangeRequirementResponse(afectados.size(), actorExcluido);
+    }
+
     @Transactional(readOnly = true)
     public List<UsuarioListResponse> imprimir(String search) {
         return exportData(search).stream().map(this::listResponse).toList();

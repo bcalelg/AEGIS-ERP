@@ -8,8 +8,10 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { ConfirmationService } from '../../../../core/confirmation/confirmation.service';
 import { NotificationService } from '../../../../core/notifications/notification.service';
 import { PermissionService } from '../../../../core/services/permission.service';
+import { MenuService as NavigationMenuService } from '../../../../core/services/menu.service';
 import { downloadFile } from '../../../../core/utils/download-file';
 import { MenuFormComponent } from '../menu-form/menu-form.component';
 import { MenuMaintenance } from '../models/menu.models';
@@ -26,6 +28,8 @@ export class MenuListComponent implements OnInit {
   private readonly service = inject(MenuMaintenanceService);
   private readonly permission = inject(PermissionService);
   private readonly notification = inject(NotificationService);
+  private readonly confirmation = inject(ConfirmationService);
+  private readonly navigationMenu = inject(NavigationMenuService);
 
   readonly permissions = signal(this.permission.forPage('menu'));
   readonly items = signal<MenuMaintenance[]>([]);
@@ -80,6 +84,7 @@ export class MenuListComponent implements OnInit {
   saved(): void {
     this.closeForm();
     this.load();
+    this.navigationMenu.refresh();
   }
 
   print(): void {
@@ -104,6 +109,30 @@ export class MenuListComponent implements OnInit {
 
   exportPdf(): void {
     this.downloadExport(this.service.exportPdf(this.search()), 'menus.pdf');
+  }
+
+  async confirmRemove(item: MenuMaintenance): Promise<void> {
+    const confirmed = await this.confirmation.confirm({
+      title: 'Eliminar menú',
+      message: `¿Desea eliminar el menú "${item.nombre}"?`,
+      warningText: 'Esta acción no se puede deshacer.',
+    });
+    if (confirmed) this.remove(item);
+  }
+
+  remove(item: MenuMaintenance): void {
+    this.service.delete(item.id).subscribe({
+      next: () => {
+        this.confirmation.complete();
+        this.load();
+        this.navigationMenu.refresh();
+        this.notification.success('Menú eliminado correctamente.');
+      },
+      error: (error) => {
+        this.confirmation.complete();
+        this.notification.operationError(error, 'No fue posible eliminar el menú.');
+      },
+    });
   }
 
   private downloadExport(

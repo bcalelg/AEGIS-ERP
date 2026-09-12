@@ -32,12 +32,13 @@ export class SidebarComponent {
   readonly profileOpen = signal(false);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly openedMenus = signal<ReadonlySet<number>>(new Set());
+  private readonly openedModuleId = signal<number | null>(null);
+  private readonly openedMenuId = signal<number | null>(null);
   private readonly currentUrl = signal(this.router.url);
   constructor() {
     effect(() => {
       const modules = this.modules();
-      untracked(() => this.expandActiveMenu(modules));
+      untracked(() => this.expandActiveBranch(modules));
     });
     this.router.events
       .pipe(
@@ -46,19 +47,30 @@ export class SidebarComponent {
       )
       .subscribe((event) => {
         this.currentUrl.set(event.urlAfterRedirects);
-        this.expandActiveMenu(this.modules());
+        this.expandActiveBranch(this.modules());
       });
   }
   optionRoute(page: string) {
     return routeForOptionPage(page);
   }
-  isOpen(id: number) {
-    return this.openedMenus().has(id);
+  isModuleOpen(id: number) {
+    return this.openedModuleId() === id;
   }
-  toggle(id: number) {
-    const next = new Set(this.openedMenus());
-    next.has(id) ? next.delete(id) : next.add(id);
-    this.openedMenus.set(next);
+  isOpen(id: number) {
+    return this.openedMenuId() === id;
+  }
+  toggleModule(id: number) {
+    if (this.isModuleOpen(id)) {
+      this.openedModuleId.set(null);
+      this.openedMenuId.set(null);
+      return;
+    }
+    this.openedModuleId.set(id);
+    this.openedMenuId.set(null);
+  }
+  toggleMenu(moduleId: number, menuId: number) {
+    this.openedModuleId.set(moduleId);
+    this.openedMenuId.update((opened) => (opened === menuId ? null : menuId));
   }
   isCurrentMenu(menu: MenuGrupo) {
     this.currentUrl();
@@ -95,13 +107,12 @@ export class SidebarComponent {
       matrixParams: 'ignored',
     });
   }
-  private expandActiveMenu(modules: ModuloMenu[]) {
-    const activeMenu = modules
-      .flatMap((module) => module.menus)
-      .find((menu) => menu.opciones.some((option) => this.isOptionRoute(option.pagina)));
-    if (!activeMenu || this.openedMenus().has(activeMenu.idMenu)) return;
-    const next = new Set(this.openedMenus());
-    next.add(activeMenu.idMenu);
-    this.openedMenus.set(next);
+  private expandActiveBranch(modules: ModuloMenu[]) {
+    const activeBranch = modules
+      .flatMap((module) => module.menus.map((menu) => ({ module, menu })))
+      .find(({ menu }) => menu.opciones.some((option) => this.isOptionRoute(option.pagina)));
+    if (!activeBranch) return;
+    this.openedModuleId.set(activeBranch.module.idModulo);
+    this.openedMenuId.set(activeBranch.menu.idMenu);
   }
 }

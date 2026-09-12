@@ -8,8 +8,10 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { ConfirmationService } from '../../../../core/confirmation/confirmation.service';
 import { NotificationService } from '../../../../core/notifications/notification.service';
 import { PermissionService } from '../../../../core/services/permission.service';
+import { MenuService } from '../../../../core/services/menu.service';
 import { downloadFile } from '../../../../core/utils/download-file';
 import { OpcionFormComponent } from '../opcion-form/opcion-form.component';
 import { OpcionMaintenance } from '../models/opcion.models';
@@ -26,6 +28,8 @@ export class OpcionListComponent implements OnInit {
   private readonly service = inject(OpcionService);
   private readonly permission = inject(PermissionService);
   private readonly notification = inject(NotificationService);
+  private readonly confirmation = inject(ConfirmationService);
+  private readonly menu = inject(MenuService);
   readonly permissions = signal(this.permission.forPage('opcion'));
   readonly items = signal<OpcionMaintenance[]>([]);
   readonly search = signal('');
@@ -75,6 +79,7 @@ export class OpcionListComponent implements OnInit {
   saved(): void {
     this.closeForm();
     this.load();
+    this.menu.refresh();
   }
   print(): void {
     this.error.set('');
@@ -95,6 +100,28 @@ export class OpcionListComponent implements OnInit {
   }
   exportPdf(): void {
     this.download(this.service.exportPdf(this.search()), 'opciones.pdf');
+  }
+  async confirmRemove(item: OpcionMaintenance): Promise<void> {
+    const confirmed = await this.confirmation.confirm({
+      title: 'Eliminar opción',
+      message: `¿Desea eliminar la opción "${item.nombre}"?`,
+      warningText: 'Esta acción no se puede deshacer.',
+    });
+    if (confirmed) this.remove(item);
+  }
+  remove(item: OpcionMaintenance): void {
+    this.service.delete(item.id).subscribe({
+      next: () => {
+        this.confirmation.complete();
+        this.load();
+        this.menu.refresh();
+        this.notification.success('Opción eliminada correctamente.');
+      },
+      error: (error) => {
+        this.confirmation.complete();
+        this.notification.operationError(error, 'No fue posible eliminar la opción.');
+      },
+    });
   }
   private download(request: ReturnType<OpcionService['exportCsv']>, filename: string): void {
     this.error.set('');

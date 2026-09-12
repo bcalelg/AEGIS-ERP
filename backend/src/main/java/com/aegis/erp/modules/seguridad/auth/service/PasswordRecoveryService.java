@@ -4,6 +4,7 @@ import com.aegis.erp.common.exception.*;
 import com.aegis.erp.modules.seguridad.auth.dto.*;
 import com.aegis.erp.modules.seguridad.usuario.entity.Usuario;
 import com.aegis.erp.modules.seguridad.usuario.repository.UsuarioRepository;
+import com.aegis.erp.modules.seguridad.usuario.service.StatusUsuarioPolicy;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -46,7 +47,7 @@ public class PasswordRecoveryService {
         String identifier = request.identifier().trim();
         if (!throttle.allow(identifier)) return new ForgotPasswordResponse(GENERIC_MESSAGE);
         usuarios.findForPasswordRecovery(identifier)
-                .filter(usuario -> "Activo".equals(usuario.getStatus().getNombre()))
+                .filter(usuario -> StatusUsuarioPolicy.isActivo(usuario.getStatus()))
                 .filter(usuario -> usuario.getCorreoElectronico() != null && !usuario.getCorreoElectronico().isBlank())
                 .ifPresent(this::sendSafely);
         return new ForgotPasswordResponse(GENERIC_MESSAGE);

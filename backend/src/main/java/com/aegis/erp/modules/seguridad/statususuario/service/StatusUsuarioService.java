@@ -9,6 +9,7 @@ import com.aegis.erp.modules.seguridad.statususuario.dto.StatusUsuarioUpdateRequ
 import com.aegis.erp.modules.seguridad.statususuario.repository.StatusUsuarioMaintenanceRepository;
 import com.aegis.erp.modules.seguridad.statususuario.repository.UsuarioStatusDependencyRepository;
 import com.aegis.erp.modules.seguridad.usuario.entity.StatusUsuario;
+import com.aegis.erp.modules.seguridad.usuario.service.StatusUsuarioPolicy;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -64,6 +65,11 @@ public class StatusUsuarioService {
             String usuario) {
         StatusUsuario status = find(id);
         String nombre = request.nombre().trim();
+        if (StatusUsuarioPolicy.isSystemStatus(status.getNombre())
+                && !StatusUsuarioPolicy.matches(status.getNombre(), nombre)) {
+            throw new BusinessConflictException(
+                    "No es posible cambiar el significado de un estatus técnico del sistema.");
+        }
         validateDuplicates(nombre, id);
         status.modificar(nombre, usuario, LocalDateTime.now(clock));
         return response(save(status));
@@ -72,6 +78,10 @@ public class StatusUsuarioService {
     @Transactional
     public void eliminar(Long id) {
         StatusUsuario status = find(id);
+        if (StatusUsuarioPolicy.isSystemStatus(status.getNombre())) {
+            throw new BusinessConflictException(
+                    "No es posible eliminar un estatus técnico requerido por el sistema.");
+        }
         if (usuarios.countUsuariosByStatusId(id) > 0) {
             throw new BusinessConflictException(
                     "No es posible eliminar el estatus porque posee usuarios asociados.");

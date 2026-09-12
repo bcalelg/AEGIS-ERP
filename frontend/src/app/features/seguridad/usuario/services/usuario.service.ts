@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../../environments/environment';
 import {
   Usuario,
+  PasswordChangeRequirementResponse,
   UsuarioCreateRequest,
   UsuarioOption,
   UsuarioSummary,
@@ -32,6 +33,20 @@ export class UsuarioService {
 
   delete(id: string) {
     return this.http.delete<void>(`${this.url}/${encodeURIComponent(id)}`);
+  }
+
+  requirePasswordChange(id: string) {
+    return this.http.post<PasswordChangeRequirementResponse>(
+      `${this.url}/${encodeURIComponent(id)}/require-password-change`,
+      {},
+    );
+  }
+
+  requirePasswordChangeByCompany(idEmpresa: number) {
+    return this.http.post<PasswordChangeRequirementResponse>(
+      `${this.url}/require-password-change/by-company/${idEmpresa}`,
+      {},
+    );
   }
 
   empresaOptions() {

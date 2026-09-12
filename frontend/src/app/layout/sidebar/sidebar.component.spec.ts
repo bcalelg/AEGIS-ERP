@@ -24,4 +24,38 @@ describe('SidebarComponent user menu', () => {
     expect(changePassword?.getAttribute('href')).not.toContain('construction');
     expect(element.textContent).toContain('Cerrar sesión');
   });
+
+  it('mantiene una sola rama de módulo y menú abierta', () => {
+    const fixture = TestBed.createComponent(SidebarComponent);
+    fixture.componentRef.setInput('modules', [
+      {
+        idModulo: 1,
+        nombre: 'Seguridad',
+        ordenMenu: 1,
+        menus: [
+          { idMenu: 10, nombre: 'Parámetros', ordenMenu: 1, opciones: [] },
+          { idMenu: 11, nombre: 'Acciones', ordenMenu: 2, opciones: [] },
+        ],
+      },
+      {
+        idModulo: 2,
+        nombre: 'Contabilidad',
+        ordenMenu: 2,
+        menus: [{ idMenu: 20, nombre: 'Nomenclatura', ordenMenu: 1, opciones: [] }],
+      },
+    ]);
+    fixture.detectChanges();
+
+    fixture.componentInstance.toggleModule(1);
+    fixture.componentInstance.toggleMenu(1, 10);
+    expect(fixture.componentInstance.isModuleOpen(1)).toBe(true);
+    expect(fixture.componentInstance.isOpen(10)).toBe(true);
+
+    fixture.componentInstance.toggleModule(2);
+    fixture.componentInstance.toggleMenu(2, 20);
+    expect(fixture.componentInstance.isModuleOpen(1)).toBe(false);
+    expect(fixture.componentInstance.isOpen(10)).toBe(false);
+    expect(fixture.componentInstance.isModuleOpen(2)).toBe(true);
+    expect(fixture.componentInstance.isOpen(20)).toBe(true);
+  });
 });

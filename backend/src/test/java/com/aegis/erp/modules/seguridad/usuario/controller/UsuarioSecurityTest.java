@@ -48,6 +48,10 @@ class UsuarioSecurityTest {
                 .andExpect(status().isForbidden());
         mvc.perform(put("/api/security/usuarios/test").with(csrf()).cookie(cookie()).contentType(MediaType.APPLICATION_JSON).content(updateJson()))
                 .andExpect(status().isForbidden());
+        mvc.perform(post("/api/security/usuarios/test/require-password-change").with(csrf()).cookie(cookie()))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/api/security/usuarios/require-password-change/by-company/1").with(csrf()).cookie(cookie()))
+                .andExpect(status().isForbidden());
         mvc.perform(delete("/api/security/usuarios/test").with(csrf()).cookie(cookie())).andExpect(status().isForbidden());
         mvc.perform(get("/api/security/usuarios/print").cookie(cookie())).andExpect(status().isForbidden());
         mvc.perform(get("/api/security/usuarios/export/csv").cookie(cookie())).andExpect(status().isForbidden());

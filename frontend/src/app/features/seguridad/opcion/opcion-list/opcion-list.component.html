@@ -94,6 +94,15 @@
                       Editar
                     </button>
                   }
+                  @if (permissions()?.baja) {
+                    <button
+                      class="btn btn-sm btn-outline-danger"
+                      type="button"
+                      (click)="confirmRemove(item)"
+                    >
+                      Eliminar
+                    </button>
+                  }
                 </td>
               </tr>
             } @empty {

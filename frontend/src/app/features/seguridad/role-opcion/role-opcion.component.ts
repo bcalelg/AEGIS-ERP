@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin, finalize } from 'rxjs';
 import { NotificationService } from '../../../core/notifications/notification.service';
 import { PermissionService } from '../../../core/services/permission.service';
+import { MenuService } from '../../../core/services/menu.service';
 import { CatalogOption, PermissionKey, RoleOpcionMatrixItem } from './models/role-opcion.models';
 import { RoleOpcionService } from './services/role-opcion.service';
 
@@ -24,6 +25,7 @@ export class RoleOpcionComponent implements OnInit {
   private readonly service = inject(RoleOpcionService);
   private readonly permission = inject(PermissionService);
   private readonly notification = inject(NotificationService);
+  private readonly menu = inject(MenuService);
 
   readonly permissions = signal(this.permission.forPage('asignacion_opcion_role'));
   readonly roles = signal<CatalogOption[]>([]);
@@ -101,6 +103,7 @@ export class RoleOpcionComponent implements OnInit {
         next: (matrix) => {
           this.matrix.set(matrix);
           this.dirty.set(false);
+          this.menu.refresh();
           this.notification.success('Permisos guardados correctamente.');
         },
         error: (error) =>

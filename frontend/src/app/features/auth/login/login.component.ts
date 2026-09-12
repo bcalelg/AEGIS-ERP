@@ -40,7 +40,7 @@ export class LoginComponent {
         error: (error: HttpErrorResponse) =>
           this.errorMessage.set(
             error.status === 401
-              ? 'Usuario o contraseña incorrectos.'
+              ? 'Usuario o contraseña incorrectos. Si el problema persiste, contacte al administrador del sistema.'
               : 'No fue posible conectar con el servidor.',
           ),
       });

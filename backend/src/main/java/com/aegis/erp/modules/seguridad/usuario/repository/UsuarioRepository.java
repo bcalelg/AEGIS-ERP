@@ -16,6 +16,12 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
                 + " join fetch u.sucursal s join fetch s.empresa order by u.idUsuario")
     List<Usuario> findAllForMaintenance();
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query(
+            "select u from Usuario u join fetch u.sucursal s join fetch s.empresa e"
+                + " where e.id = :idEmpresa order by u.idUsuario")
+    List<Usuario> findAllByEmpresaForPasswordChange(@Param("idEmpresa") Long idEmpresa);
+
     @Query(
             "select u from Usuario u join fetch u.genero join fetch u.status join fetch u.role"
                 + " join fetch u.sucursal s join fetch s.empresa where u.idUsuario = :idUsuario")

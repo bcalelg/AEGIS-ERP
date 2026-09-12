@@ -4,7 +4,7 @@
   </div>
   <div class="card-body">
     <form [formGroup]="form" (ngSubmit)="save()" novalidate>
-      <div class="row g-3 align-items-end">
+      <div class="row g-3 align-items-start">
         <div class="col-lg-4">
           <label class="form-label" for="opcion-menu">Menú</label>
           <select id="opcion-menu" class="form-select" formControlName="idMenu">
@@ -54,7 +54,7 @@
             <div class="text-danger small mt-1">Debe ser mayor que cero.</div>
           }
         </div>
-        <div class="col-lg-3 d-flex gap-2 justify-content-lg-end">
+        <div class="col-lg-3 d-flex gap-2 justify-content-lg-end pt-lg-4 mt-lg-1">
           <button class="btn btn-secondary" type="button" [disabled]="saving()" (click)="cancel()">
             Cancelar
           </button>

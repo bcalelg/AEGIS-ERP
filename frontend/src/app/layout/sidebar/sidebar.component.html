@@ -46,33 +46,51 @@
       >
     </li>
     @for (module of modules(); track module.idModulo) {
-      <li class="sidebar-header">{{ module.nombre }}</li>
-      @for (menu of module.menus; track menu.idMenu) {
-        <li class="sidebar-item" [class.active]="isCurrentMenu(menu)">
-          <button
-            class="sidebar-link sidebar-menu-toggle"
-            type="button"
-            [attr.aria-expanded]="isOpen(menu.idMenu)"
-            (click)="toggle(menu.idMenu)"
-          >
-            <span>{{ menu.nombre }}</span
-            ><i class="bi bi-chevron-right sidebar-chevron" [class.open]="isOpen(menu.idMenu)"></i>
-          </button>
-          @if (isOpen(menu.idMenu)) {
-            <ul class="sidebar-dropdown list-unstyled">
-              @for (option of menu.opciones; track option.idOpcion) {
-                <li class="sidebar-item" routerLinkActive="active">
-                  <a
-                    class="sidebar-link"
-                    [routerLink]="optionRoute(option.pagina)"
-                    (click)="navigate.emit()"
-                    >{{ option.nombre }}</a
-                  >
-                </li>
-              }
-            </ul>
-          }
-        </li>
+      <li class="sidebar-header sidebar-module-header">
+        <button
+          class="sidebar-module-toggle"
+          type="button"
+          [attr.aria-expanded]="isModuleOpen(module.idModulo)"
+          (click)="toggleModule(module.idModulo)"
+        >
+          <span>{{ module.nombre }}</span>
+          <i
+            class="bi bi-chevron-right sidebar-chevron"
+            [class.open]="isModuleOpen(module.idModulo)"
+          ></i>
+        </button>
+      </li>
+      @if (isModuleOpen(module.idModulo)) {
+        @for (menu of module.menus; track menu.idMenu) {
+          <li class="sidebar-item" [class.active]="isCurrentMenu(menu)">
+            <button
+              class="sidebar-link sidebar-menu-toggle"
+              type="button"
+              [attr.aria-expanded]="isOpen(menu.idMenu)"
+              (click)="toggleMenu(module.idModulo, menu.idMenu)"
+            >
+              <span>{{ menu.nombre }}</span
+              ><i
+                class="bi bi-chevron-right sidebar-chevron"
+                [class.open]="isOpen(menu.idMenu)"
+              ></i>
+            </button>
+            @if (isOpen(menu.idMenu)) {
+              <ul class="sidebar-dropdown list-unstyled">
+                @for (option of menu.opciones; track option.idOpcion) {
+                  <li class="sidebar-item" routerLinkActive="active">
+                    <a
+                      class="sidebar-link"
+                      [routerLink]="optionRoute(option.pagina)"
+                      (click)="navigate.emit()"
+                      >{{ option.nombre }}</a
+                    >
+                  </li>
+                }
+              </ul>
+            }
+          </li>
+        }
       }
     } @empty {
       <li class="empty-menu">

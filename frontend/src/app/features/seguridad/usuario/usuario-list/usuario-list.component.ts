@@ -6,7 +6,7 @@ import { ConfirmationService } from '../../../../core/confirmation/confirmation.
 import { NotificationService } from '../../../../core/notifications/notification.service';
 import { PermissionService } from '../../../../core/services/permission.service';
 import { downloadFile } from '../../../../core/utils/download-file';
-import { Usuario, UsuarioSummary } from '../models/usuario.models';
+import { Usuario, UsuarioOption, UsuarioSummary } from '../models/usuario.models';
 import { UsuarioService } from '../services/usuario.service';
 import { UsuarioFormComponent } from '../usuario-form/usuario-form.component';
 
@@ -41,8 +41,20 @@ export class UsuarioListComponent implements OnInit {
   readonly formOpen = signal(false);
   readonly editing = signal<Usuario | null>(null);
   readonly exportOpen = signal(false);
+  readonly empresas = signal<UsuarioOption[]>([]);
+  readonly selectedEmpresaId = signal<number | null>(null);
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.load();
+    if (this.permissions()?.cambio) this.loadEmpresas();
+  }
+
+  loadEmpresas(): void {
+    this.service.empresaOptions().subscribe({
+      next: (items) => this.empresas.set(items),
+      error: (error) => this.notification.operationError(error, 'No fue posible cargar las empresas.'),
+    });
+  }
 
   load(): void {
     this.loading.set(true);
@@ -93,6 +105,60 @@ export class UsuarioListComponent implements OnInit {
       error: (error) => {
         this.confirmation.complete();
         this.notification.operationError(error, 'No fue posible eliminar el usuario.');
+      },
+    });
+  }
+
+  async confirmRequirePasswordChange(item: UsuarioSummary): Promise<void> {
+    if (item.requiereCambiarPassword) return;
+    const confirmed = await this.confirmation.confirm({
+      title: 'Forzar cambio de contraseña',
+      message: `¿Desea exigir que "${item.idUsuario}" cambie su contraseña en el próximo ingreso?`,
+      warningText: 'La sesión activa del usuario será cerrada.',
+      confirmText: 'Forzar cambio',
+      type: 'danger',
+    });
+    if (!confirmed) return;
+    this.service.requirePasswordChange(item.idUsuario).subscribe({
+      next: () => {
+        this.confirmation.complete();
+        this.load();
+        this.notification.success(`Cambio de contraseña requerido para "${item.idUsuario}".`);
+      },
+      error: (error) => {
+        this.confirmation.complete();
+        this.notification.operationError(error, 'No fue posible exigir el cambio de contraseña.');
+      },
+    });
+  }
+
+  async confirmRequirePasswordChangeByCompany(): Promise<void> {
+    const idEmpresa = this.selectedEmpresaId();
+    if (idEmpresa === null) {
+      this.notification.warning('Seleccione una empresa para aplicar el cambio obligatorio.');
+      return;
+    }
+    const empresa = this.empresas().find((item) => item.id === idEmpresa);
+    const confirmed = await this.confirmation.confirm({
+      title: 'Forzar cambio por empresa',
+      message: `¿Desea exigir el cambio de contraseña a los usuarios de "${empresa?.nombre ?? 'la empresa seleccionada'}"?`,
+      warningText: 'Sus sesiones activas serán cerradas. Su propia cuenta será excluida para conservar esta sesión.',
+      confirmText: 'Aplicar a empresa',
+      type: 'danger',
+    });
+    if (!confirmed) return;
+    this.service.requirePasswordChangeByCompany(idEmpresa).subscribe({
+      next: (result) => {
+        this.confirmation.complete();
+        this.load();
+        const exclusion = result.usuarioEjecutorExcluido ? ' Su cuenta fue excluida.' : '';
+        this.notification.success(
+          `Cambio obligatorio aplicado a ${result.usuariosAfectados} usuario(s).${exclusion}`,
+        );
+      },
+      error: (error) => {
+        this.confirmation.complete();
+        this.notification.operationError(error, 'No fue posible aplicar el cambio a la empresa.');
       },
     });
   }

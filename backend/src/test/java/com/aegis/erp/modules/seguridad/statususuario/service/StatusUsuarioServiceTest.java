@@ -120,6 +120,29 @@ class StatusUsuarioServiceTest {
     }
 
     @Test
+    void protegeEstadosTecnicosPeroPermiteCambiarSuPresentacion() {
+        StatusUsuario activo = status("Activo");
+        when(statuses.findById(1L)).thenReturn(Optional.of(activo));
+        when(statuses.saveAndFlush(activo)).thenReturn(activo);
+
+        service.modificar(1L, new StatusUsuarioUpdateRequest("ACTIVO"), "Administrador");
+
+        assertThat(activo.getNombre()).isEqualTo("ACTIVO");
+        assertThatThrownBy(
+                        () ->
+                                service.modificar(
+                                        1L,
+                                        new StatusUsuarioUpdateRequest("Habilitado"),
+                                        "Administrador"))
+                .isInstanceOf(BusinessConflictException.class)
+                .hasMessageContaining("estatus técnico");
+        assertThatThrownBy(() -> service.eliminar(1L))
+                .isInstanceOf(BusinessConflictException.class)
+                .hasMessageContaining("estatus técnico");
+        verify(statuses, never()).delete(activo);
+    }
+
+    @Test
     void imprimeYExportaLosTresFormatosRespetandoFiltro() throws Exception {
         when(statuses.findAll()).thenReturn(List.of(status("Activo"), status("Inactivo")));
 

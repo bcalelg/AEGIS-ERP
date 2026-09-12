@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NEVER, of } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Permisos } from '../../../../core/models/menu.models';
+import { ConfirmationService } from '../../../../core/confirmation/confirmation.service';
 import { NotificationService } from '../../../../core/notifications/notification.service';
 import { PermissionService } from '../../../../core/services/permission.service';
+import { MenuService } from '../../../../core/services/menu.service';
 import { ModuloService } from '../services/modulo.service';
 import { ModuloListComponent } from './modulo-list.component';
 
@@ -21,6 +23,8 @@ describe('ModuloListComponent', () => {
     exportCsv: vi.fn(() => NEVER),
   };
   const notification = { success: vi.fn(), operationError: vi.fn() };
+  const confirmation = { confirm: vi.fn(() => Promise.resolve(true)), complete: vi.fn() };
+  const menu = { refresh: vi.fn() };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -39,6 +43,8 @@ describe('ModuloListComponent', () => {
         { provide: ModuloService, useValue: service },
         { provide: PermissionService, useValue: { forPage: () => permissions } },
         { provide: NotificationService, useValue: notification },
+        { provide: ConfirmationService, useValue: confirmation },
+        { provide: MenuService, useValue: menu },
       ],
     }).compileComponents();
   });
@@ -55,14 +61,14 @@ describe('ModuloListComponent', () => {
     );
   }
 
-  it('muestra Nuevo y Editar según permisos, pero nunca expone Eliminar', () => {
+  it('muestra Nuevo, Editar y Eliminar según permisos', () => {
     expect(render().textContent).not.toContain('Nuevo módulo');
     fixture.destroy();
     permissions.alta = true;
     permissions.cambio = true;
     permissions.baja = true;
     const element = render();
-    expect(element.textContent).not.toContain('Eliminar');
+    expect(element.textContent).toContain('Eliminar');
     button(element, 'Nuevo módulo')?.click();
     fixture.detectChanges();
     expect(element.textContent).toContain('Nuevo módulo');
@@ -73,7 +79,23 @@ describe('ModuloListComponent', () => {
     fixture.componentInstance.closeForm();
     fixture.detectChanges();
     expect(button(element, 'Editar')).toBeDefined();
-    expect(button(element, 'Eliminar')).toBeUndefined();
+    expect(button(element, 'Eliminar')).toBeDefined();
+  });
+
+  it('confirma, elimina, recarga y normaliza errores de relaciones', async () => {
+    const item = { id: 1, nombre: 'Seguridad', orden: 1 };
+    render();
+    await fixture.componentInstance.confirmRemove(item);
+    expect(service.delete).toHaveBeenCalledWith(1);
+    expect(notification.success).toHaveBeenCalledWith('Módulo eliminado correctamente.');
+    expect(menu.refresh).toHaveBeenCalled();
+
+    service.delete.mockReturnValueOnce(throwError(() => ({ error: { detail: 'Posee menús.' } })));
+    fixture.componentInstance.remove(item);
+    expect(notification.operationError).toHaveBeenCalledWith(
+      expect.anything(),
+      'No fue posible eliminar el módulo.',
+    );
   });
 
   it('filtra por nombre y respeta IMPRIMIR y EXPORTAR', () => {

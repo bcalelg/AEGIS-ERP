@@ -27,6 +27,11 @@ export interface UsuarioOption {
   nombre: string;
 }
 
+export interface PasswordChangeRequirementResponse {
+  usuariosAfectados: number;
+  usuarioEjecutorExcluido: boolean;
+}
+
 export interface UsuarioCreateRequest {
   idUsuario: string;
   nombre: string;

@@ -3,6 +3,7 @@ import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { NotificationService } from '../../../core/notifications/notification.service';
 import { PermissionService } from '../../../core/services/permission.service';
+import { MenuService } from '../../../core/services/menu.service';
 import { RoleOpcionComponent } from './role-opcion.component';
 import { RoleOpcionService } from './services/role-opcion.service';
 
@@ -31,6 +32,7 @@ describe('RoleOpcionComponent', () => {
     success: vi.fn(),
     operationError: vi.fn(),
   };
+  const menu = { refresh: vi.fn() };
 
   async function create() {
     await TestBed.configureTestingModule({
@@ -38,6 +40,7 @@ describe('RoleOpcionComponent', () => {
       providers: [
         { provide: RoleOpcionService, useValue: service },
         { provide: NotificationService, useValue: notification },
+        { provide: MenuService, useValue: menu },
         {
           provide: PermissionService,
           useValue: {
@@ -76,6 +79,7 @@ describe('RoleOpcionComponent', () => {
     expect(service.save).toHaveBeenCalledWith(expect.objectContaining({ idRole: 2, idModulo: 1 }));
     expect(fixture.componentInstance.dirty()).toBe(false);
     expect(notification.success).toHaveBeenCalledWith('Permisos guardados correctamente.');
+    expect(menu.refresh).toHaveBeenCalled();
   });
 
   it('protege los cambios sin guardar al cambiar selección', async () => {

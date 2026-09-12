@@ -8,8 +8,10 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { ConfirmationService } from '../../../../core/confirmation/confirmation.service';
 import { NotificationService } from '../../../../core/notifications/notification.service';
 import { PermissionService } from '../../../../core/services/permission.service';
+import { MenuService } from '../../../../core/services/menu.service';
 import { downloadFile } from '../../../../core/utils/download-file';
 import { ModuloFormComponent } from '../modulo-form/modulo-form.component';
 import { Modulo } from '../models/modulo.models';
@@ -26,6 +28,8 @@ export class ModuloListComponent implements OnInit {
   private readonly service = inject(ModuloService);
   private readonly permission = inject(PermissionService);
   private readonly notification = inject(NotificationService);
+  private readonly confirmation = inject(ConfirmationService);
+  private readonly menu = inject(MenuService);
 
   readonly permissions = signal(this.permission.forPage('modulo'));
   readonly items = signal<Modulo[]>([]);
@@ -77,6 +81,7 @@ export class ModuloListComponent implements OnInit {
   saved(): void {
     this.closeForm();
     this.load();
+    this.menu.refresh();
   }
 
   print(): void {
@@ -101,6 +106,30 @@ export class ModuloListComponent implements OnInit {
 
   exportPdf(): void {
     this.downloadExport(this.service.exportPdf(this.search()), 'modulos.pdf');
+  }
+
+  async confirmRemove(item: Modulo): Promise<void> {
+    const confirmed = await this.confirmation.confirm({
+      title: 'Eliminar módulo',
+      message: `¿Desea eliminar el módulo "${item.nombre}"?`,
+      warningText: 'Esta acción no se puede deshacer.',
+    });
+    if (confirmed) this.remove(item);
+  }
+
+  remove(item: Modulo): void {
+    this.service.delete(item.id).subscribe({
+      next: () => {
+        this.confirmation.complete();
+        this.load();
+        this.menu.refresh();
+        this.notification.success('Módulo eliminado correctamente.');
+      },
+      error: (error) => {
+        this.confirmation.complete();
+        this.notification.operationError(error, 'No fue posible eliminar el módulo.');
+      },
+    });
   }
 
   private downloadExport(request: ReturnType<ModuloService['exportCsv']>, filename: string): void {

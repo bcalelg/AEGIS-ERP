@@ -4,7 +4,7 @@
   </div>
   <div class="card-body">
     <form [formGroup]="form" (ngSubmit)="save()" novalidate>
-      <div class="row g-3 align-items-end">
+      <div class="row g-3 align-items-start">
         <div class="col-md-4">
           <label class="form-label" for="menu-modulo">Módulo</label>
           <select id="menu-modulo" class="form-select" formControlName="idModulo">
@@ -46,7 +46,7 @@
             <div class="text-danger small mt-1">El orden debe ser mayor que cero.</div>
           }
         </div>
-        <div class="col-md-3 d-flex gap-2 justify-content-md-end">
+        <div class="col-md-3 d-flex gap-2 justify-content-md-end pt-md-4 mt-md-1">
           <button class="btn btn-secondary" type="button" [disabled]="saving()" (click)="cancel()">
             Cancelar
           </button>

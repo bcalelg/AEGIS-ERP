@@ -64,6 +64,17 @@ class PasswordRecoveryServiceTest {
     }
 
     @Test
+    void permiteRecuperacionConEstadoActivoEnMayusculas() {
+        when(status.getNombre()).thenReturn(" ACTIVO ");
+        when(usuarios.findForPasswordRecovery("TEST_LOGIN"))
+                .thenReturn(Optional.of(usuario()));
+
+        service.request(new ForgotPasswordRequest("TEST_LOGIN"));
+
+        verify(mail).send(eq("test@example.com"), eq("Usuario"), anyString());
+    }
+
+    @Test
     void noEnviaParaUsuarioInactivoOSinCorreo() {
         Usuario inactivo = usuario("test@example.com");
         when(status.getNombre()).thenReturn("Inactivo");

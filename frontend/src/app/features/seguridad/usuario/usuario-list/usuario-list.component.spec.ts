@@ -21,6 +21,8 @@ describe('UsuarioListComponent', () => {
     exportCsv: vi.fn(() => NEVER), exportExcel: vi.fn(() => NEVER), exportPdf: vi.fn(() => NEVER),
     empresaOptions: vi.fn(() => of([])), sucursalOptions: vi.fn(() => of([])), generoOptions: vi.fn(() => of([])),
     statusOptions: vi.fn(() => of([])), roleOptions: vi.fn(() => of([])), create: vi.fn(() => NEVER), update: vi.fn(() => NEVER),
+    requirePasswordChange: vi.fn(() => of({ usuariosAfectados: 1, usuarioEjecutorExcluido: false })),
+    requirePasswordChangeByCompany: vi.fn(() => of({ usuariosAfectados: 2, usuarioEjecutorExcluido: true })),
   };
   const notification = { success: vi.fn(), operationError: vi.fn() };
   const confirmation = { confirm: vi.fn(() => Promise.resolve(true)), complete: vi.fn() };
@@ -61,5 +63,23 @@ describe('UsuarioListComponent', () => {
     service.delete.mockReturnValueOnce(throwError(() => ({ error: { detail: 'Posee registros asociados.' } })));
     fixture.componentInstance.remove(item);
     expect(notification.operationError).toHaveBeenCalledWith(expect.anything(), 'No fue posible eliminar el usuario.');
+  });
+
+  it('fuerza el cambio individual mediante confirmación y refresca el listado', async () => {
+    const pending = { ...item, requiereCambiarPassword: false };
+    await fixture.componentInstance.confirmRequirePasswordChange(pending);
+    expect(service.requirePasswordChange).toHaveBeenCalledWith('TEST');
+    expect(notification.success).toHaveBeenCalledWith('Cambio de contraseña requerido para "TEST".');
+    expect(service.list).toHaveBeenCalledTimes(2);
+  });
+
+  it('fuerza el cambio por empresa e informa la exclusión del ejecutor', async () => {
+    fixture.componentInstance.empresas.set([{ id: 1, nombre: 'Empresa A' }]);
+    fixture.componentInstance.selectedEmpresaId.set(1);
+    await fixture.componentInstance.confirmRequirePasswordChangeByCompany();
+    expect(service.requirePasswordChangeByCompany).toHaveBeenCalledWith(1);
+    expect(notification.success).toHaveBeenCalledWith(
+      'Cambio obligatorio aplicado a 2 usuario(s). Su cuenta fue excluida.',
+    );
   });
 });

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LoginResponse } from '../../../core/models/auth.models';
 import { LoginComponent } from './login.component';
@@ -43,6 +43,18 @@ describe('LoginComponent mandatory password change', () => {
     component.submit();
 
     expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
+  });
+
+  it('orienta al usuario sin revelar la causa de una autenticación rechazada', () => {
+    auth.login.mockReturnValue(throwError(() => ({ status: 401 })));
+    const component = TestBed.createComponent(LoginComponent).componentInstance;
+    component.form.setValue({ idUsuario: 'usuario', password: 'incorrecta' });
+
+    component.submit();
+
+    expect(component.errorMessage()).toBe(
+      'Usuario o contraseña incorrectos. Si el problema persiste, contacte al administrador del sistema.',
+    );
   });
 
   function response(requiresChange: boolean): LoginResponse {

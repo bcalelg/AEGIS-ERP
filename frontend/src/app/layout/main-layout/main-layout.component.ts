@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, EMPTY, startWith, switchMap } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { MenuService } from '../../core/services/menu.service';
 import { ProfileService } from '../../core/profile/profile.service';
@@ -30,10 +31,20 @@ export class MainLayoutComponent implements OnInit {
   readonly sidebarCollapsed = signal(false);
   ngOnInit() {
     this.profile.loadPhoto().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
-    this.menu
-      .load()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({ error: () => this.menu.clear() });
+    this.menu.refreshRequested$
+      .pipe(
+        startWith(void 0),
+        switchMap(() =>
+          this.menu.load().pipe(
+            catchError(() => {
+              this.menu.clear();
+              return EMPTY;
+            }),
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
   }
   logout() {
     this.auth

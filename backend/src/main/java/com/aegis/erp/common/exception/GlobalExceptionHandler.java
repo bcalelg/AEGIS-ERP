@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
     ProblemDetail invalidCredentials(InvalidCredentialsException e) {
         return problem(
                 HttpStatus.UNAUTHORIZED,
-                "Credenciales inválidas.",
+                InvalidCredentialsException.GENERIC_MESSAGE,
                 "Autenticación fallida",
                 "invalid-credentials");
     }

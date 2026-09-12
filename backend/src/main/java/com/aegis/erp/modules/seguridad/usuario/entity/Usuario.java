@@ -280,6 +280,11 @@ public class Usuario {
         requiereCambiarPassword = 1;
     }
 
+    public void requerirCambioPasswordEInvalidarSesion() {
+        requiereCambiarPassword = 1;
+        sesionActual = null;
+    }
+
     public void cambiarPassword(
             String nuevoHash,
             LocalDateTime fecha,

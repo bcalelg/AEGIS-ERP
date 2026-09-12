@@ -7,6 +7,7 @@ import com.aegis.erp.modules.seguridad.auth.dto.*;
 import com.aegis.erp.modules.seguridad.auth.mapper.UsuarioAuthMapper;
 import com.aegis.erp.modules.seguridad.usuario.entity.*;
 import com.aegis.erp.modules.seguridad.usuario.repository.*;
+import com.aegis.erp.modules.seguridad.usuario.service.StatusUsuarioPolicy;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,9 +22,9 @@ import java.util.UUID;
 @Service
 public class AuthenticationService {
     private static final Logger log = LoggerFactory.getLogger(AuthenticationService.class);
-    static final String ACTIVO = "Activo",
-            INACTIVO = "Inactivo",
-            BLOQUEADO = "Bloqueado por intentos de acceso";
+    static final String ACTIVO = StatusUsuarioPolicy.ACTIVO,
+            INACTIVO = StatusUsuarioPolicy.INACTIVO,
+            BLOQUEADO = StatusUsuarioPolicy.BLOQUEADO;
     static final String CONCEDIDO = "Acceso Concedido",
             SALIDA = "Salida del Sistema",
             PASSWORD_INCORRECTO = "Bloqueado - Password incorrecto",
@@ -61,15 +62,18 @@ public class AuthenticationService {
         if (usuario == null) {
             reject(request.idUsuario(), USUARIO_NO_EXISTE, context);
         }
-        String estado = usuario.getStatus().getNombre();
-        if (INACTIVO.equals(estado)) {
+        StatusUsuario estado = usuario.getStatus();
+        if (StatusUsuarioPolicy.isInactivo(estado)) {
             reject(request.idUsuario(), USUARIO_INACTIVO, context);
         }
-        if (BLOQUEADO.equals(estado)) {
+        if (StatusUsuarioPolicy.isBloqueado(estado)) {
             reject(request.idUsuario(), INTENTOS_EXCEDIDOS, context);
         }
-        if (!ACTIVO.equals(estado)) {
-            reject(request.idUsuario(), USUARIO_INACTIVO, context);
+        if (!StatusUsuarioPolicy.isActivo(estado)) {
+            log.error(
+                    "El usuario posee un estado no reconocido. statusId={}",
+                    estado == null ? null : estado.getId());
+            throw new InvalidCredentialsException();
         }
         if (!encoder.matches(request.password(), usuario.getPasswordHash())) {
             registrarPasswordIncorrecto(usuario, context);
@@ -163,7 +167,7 @@ public class AuthenticationService {
             throw new IllegalStateException("Política de intentos de acceso no configurada.");
         if (usuario.getIntentosAcceso() >= max) {
             StatusUsuario bloqueado =
-                    statuses.findByNombre(BLOQUEADO)
+                    statuses.findByNombreIgnoreCase(BLOQUEADO)
                             .orElseThrow(
                                     () ->
                                             new IllegalStateException(

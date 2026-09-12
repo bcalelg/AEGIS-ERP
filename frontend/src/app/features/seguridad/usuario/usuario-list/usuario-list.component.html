@@ -20,6 +20,18 @@
         <span class="input-group-text"><i class="bi bi-search"></i></span>
         <input class="form-control" [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Buscar por usuario, nombre, rol, empresa, sucursal o estatus" />
       </div>
+      @if (permissions()?.cambio) {
+        <div class="input-group usuario-company-action">
+          <label class="input-group-text" for="password-company">Empresa</label>
+          <select id="password-company" class="form-select" [ngModel]="selectedEmpresaId()" (ngModelChange)="selectedEmpresaId.set(+$event || null)">
+            <option [ngValue]="null">Seleccione…</option>
+            @for (empresa of empresas(); track empresa.id) { <option [ngValue]="empresa.id">{{ empresa.nombre }}</option> }
+          </select>
+          <button class="btn btn-outline-warning" type="button" [disabled]="selectedEmpresaId() === null" (click)="confirmRequirePasswordChangeByCompany()" title="Forzar cambio de contraseña a los usuarios de la empresa">
+            <i class="bi bi-shield-lock me-2"></i>Forzar cambio
+          </button>
+        </div>
+      }
       @if (permissions()?.imprimir) {
         <button class="btn btn-outline-secondary" type="button" (click)="print()"><i class="bi bi-printer me-2"></i>Imprimir</button>
       }
@@ -53,7 +65,12 @@
                 <td><span class="badge bg-light text-dark border">{{ item.nombreStatusUsuario }}</span></td>
                 <td>{{ item.ultimaFechaIngreso ? (item.ultimaFechaIngreso | date: 'dd/MM/yyyy HH:mm') : 'Sin ingresos' }}</td>
                 <td class="text-end no-print">
-                  @if (permissions()?.cambio) { <button class="btn btn-sm btn-outline-primary me-2" type="button" (click)="openEdit(item)">Editar</button> }
+                  @if (permissions()?.cambio) {
+                    <button class="btn btn-sm btn-outline-primary me-2" type="button" (click)="openEdit(item)">Editar</button>
+                    <button class="btn btn-sm btn-outline-warning me-2" type="button" [disabled]="item.requiereCambiarPassword" (click)="confirmRequirePasswordChange(item)" title="Exigir cambio de contraseña">
+                      <i class="bi bi-key"></i><span class="visually-hidden">Forzar cambio de contraseña de {{ item.idUsuario }}</span>
+                    </button>
+                  }
                   @if (permissions()?.baja) { <button class="btn btn-sm btn-outline-danger" type="button" (click)="confirmRemove(item)">Eliminar</button> }
                 </td>
               </tr>
