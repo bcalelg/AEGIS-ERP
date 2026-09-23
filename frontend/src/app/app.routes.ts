@@ -110,6 +110,30 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/profile/profile.component').then((m) => m.ProfileComponent),
       },
+      ...[
+        { path: 'estados-civiles', data: { catalog: 'estados-civiles', page: 'estado_civil', title: 'Estados Civiles', description: 'Administración de estados civiles.' } },
+        { path: 'status-empleados', data: { catalog: 'status-empleados', page: 'status_empleado', title: 'Status Empleado', description: 'Administración de estados laborales.' } },
+        { path: 'flujos-status-empleado', data: { catalog: 'flujos-status-empleado', page: 'flujo_status_empleado', title: 'Flujos Status Empleado', description: 'Transiciones permitidas entre estados laborales.', flow: true } },
+        { path: 'tipos-documento', data: { catalog: 'tipos-documento', page: 'tipos_documento', title: 'Tipos de Documentos', description: 'Administración de tipos de documento.' } },
+        { path: 'departamentos-planilla', data: { catalog: 'departamentos', page: 'departamento', title: 'Departamentos', description: 'Administración de departamentos por empresa.', relationCatalog: 'empresas', relationLabel: 'Empresa' } },
+        { path: 'puestos', data: { catalog: 'puestos', page: 'puesto', title: 'Puestos', description: 'Administración de puestos por departamento.', relationCatalog: 'departamentos', relationLabel: 'Departamento' } },
+        { path: 'bancos', data: { catalog: 'bancos', page: 'banco', title: 'Bancos', description: 'Administración del catálogo de bancos.' } },
+      ].map((route) => ({
+        ...route,
+        loadComponent: () => import('./features/planilla/catalogo/planilla-catalog.component').then((m) => m.PlanillaCatalogComponent),
+      })),
+      {
+        path: 'personas',
+        loadComponent: () => import('./features/planilla/persona/persona.component').then((m) => m.PersonaComponent),
+      },
+      {
+        path: 'documentos-persona',
+        loadComponent: () => import('./features/planilla/documento-persona/documento-persona.component').then((m) => m.DocumentoPersonaComponent),
+      },
+      {
+        path: 'empleados',
+        loadComponent: () => import('./features/planilla/empleado/empleado.component').then((m) => m.EmpleadoComponent),
+      },
       {
         path: 'dashboard',
         loadComponent: () =>

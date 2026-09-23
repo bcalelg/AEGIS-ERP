@@ -16,6 +16,16 @@ const optionRoutes: Readonly<Record<string, readonly string[]>> = {
   asignacion_opcion_role: ['/asignar-opciones-rol'],
   sucursal: ['/sucursales'],
   usuario: ['/usuarios'],
+  estado_civil: ['/estados-civiles'],
+  status_empleado: ['/status-empleados'],
+  flujo_status_empleado: ['/flujos-status-empleado'],
+  tipos_documento: ['/tipos-documento'],
+  departamento: ['/departamentos-planilla'],
+  puesto: ['/puestos'],
+  banco: ['/bancos'],
+  personas: ['/personas'],
+  documento_persona: ['/documentos-persona'],
+  empleado: ['/empleados'],
 };
 
 export function routeForOptionPage(page: string): readonly string[] {

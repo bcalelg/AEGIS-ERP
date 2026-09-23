@@ -1,0 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { PersonaService } from './persona.service';
+describe('PersonaService',()=>{let service:PersonaService;let http:HttpTestingController;beforeEach(()=>{TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});service=TestBed.inject(PersonaService);http=TestBed.inject(HttpTestingController);});afterEach(()=>http.verify());it('uses personas CRUD and search',()=>{service.list('Ana').subscribe();const a=http.expectOne(r=>r.url==='/api/planilla/personas'&&r.params.get('search')==='Ana');expect(a.request.method).toBe('GET');a.flush([]);service.delete(7).subscribe();const b=http.expectOne('/api/planilla/personas/7');expect(b.request.method).toBe('DELETE');b.flush(null);});it('downloads Excel as blob',()=>{service.export('excel','Ana').subscribe();const request=http.expectOne(r=>r.url==='/api/planilla/personas/export/excel');expect(request.request.responseType).toBe('blob');request.flush(new Blob());});});

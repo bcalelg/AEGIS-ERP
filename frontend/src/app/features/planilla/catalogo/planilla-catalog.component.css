@@ -1,0 +1,1 @@
+.toolbar,.catalog-form{display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap}.search{max-width:320px}.form-card{margin-bottom:1rem}.catalog-form label{flex:1 1 220px}.actions{display:flex;gap:.5rem;margin-left:auto}@media(max-width:767px){.toolbar>*{width:100%}.search{max-width:none}.actions{width:100%}.actions .btn{flex:1}}
