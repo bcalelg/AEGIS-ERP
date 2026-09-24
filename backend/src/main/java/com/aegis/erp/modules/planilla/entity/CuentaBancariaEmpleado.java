@@ -16,6 +16,8 @@ public class CuentaBancariaEmpleado extends AuditableEntity {
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "ACTIVA", nullable = false, length = 1) private String activa;
     protected CuentaBancariaEmpleado() {}
+    public static CuentaBancariaEmpleado crear(Empleado empleado,Banco banco,String numero,String activa,String usuario,java.time.LocalDateTime ahora){var e=new CuentaBancariaEmpleado();e.empleado=empleado;e.banco=banco;e.numeroCuenta=numero;e.activa=activa;e.usuarioCreacion=usuario;e.fechaCreacion=ahora;return e;}
+    public void modificar(Empleado empleado,Banco banco,String numero,String activa,String usuario,java.time.LocalDateTime ahora){this.empleado=empleado;this.banco=banco;this.numeroCuenta=numero;this.activa=activa;this.usuarioModificacion=usuario;this.fechaModificacion=ahora;}
     public Long getId() { return id; }
     public Empleado getEmpleado() { return empleado; }
     public Banco getBanco() { return banco; }

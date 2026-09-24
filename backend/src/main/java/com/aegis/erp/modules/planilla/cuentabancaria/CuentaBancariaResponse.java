@@ -1,0 +1,1 @@
+package com.aegis.erp.modules.planilla.cuentabancaria;public record CuentaBancariaResponse(Long id,Long empleadoId,String empleadoNombre,Long bancoId,String bancoNombre,String numeroCuenta,String activa){}

@@ -1,0 +1,1 @@
+package com.aegis.erp.modules.planilla.inasistencia;import jakarta.validation.constraints.*;import java.time.LocalDateTime;public record InasistenciaRequest(@NotNull Long empleadoId,@NotNull LocalDateTime fechaInicial,@NotNull LocalDateTime fechaFinal,@Size(max=300)String motivo){}

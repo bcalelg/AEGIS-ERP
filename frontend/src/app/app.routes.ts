@@ -134,6 +134,9 @@ export const routes: Routes = [
         path: 'empleados',
         loadComponent: () => import('./features/planilla/empleado/empleado.component').then((m) => m.EmpleadoComponent),
       },
+      { path: 'cuentas-bancarias-empleados', loadComponent: () => import('./features/planilla/cuenta-bancaria/cuenta-bancaria.component').then((m) => m.CuentaBancariaComponent) },
+      { path: 'inasistencias', loadComponent: () => import('./features/planilla/inasistencia/inasistencia.component').then((m) => m.InasistenciaComponent) },
+      { path: 'calcular-planilla', loadComponent: () => import('./features/planilla/calculo-planilla/calculo-planilla.component').then((m) => m.CalculoPlanillaComponent) },
       {
         path: 'dashboard',
         loadComponent: () =>

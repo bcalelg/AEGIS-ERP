@@ -1,0 +1,1 @@
+package com.aegis.erp.modules.planilla.inasistencia;import java.time.LocalDateTime;public record InasistenciaResponse(Long id,Long empleadoId,String empleadoNombre,LocalDateTime fechaInicial,LocalDateTime fechaFinal,String motivo,LocalDateTime fechaProcesado){}

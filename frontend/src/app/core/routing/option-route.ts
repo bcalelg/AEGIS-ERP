@@ -26,6 +26,9 @@ const optionRoutes: Readonly<Record<string, readonly string[]>> = {
   personas: ['/personas'],
   documento_persona: ['/documentos-persona'],
   empleado: ['/empleados'],
+  cuenta_bancaria_empleado: ['/cuentas-bancarias-empleados'],
+  inasistencia: ['/inasistencias'],
+  calculo_planilla: ['/calcular-planilla'],
 };
 
 export function routeForOptionPage(page: string): readonly string[] {

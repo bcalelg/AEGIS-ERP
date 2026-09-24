@@ -1,0 +1,1 @@
+package com.aegis.erp.modules.planilla.cuentabancaria;import jakarta.validation.constraints.*;public record CuentaBancariaRequest(@NotNull Long empleadoId,@NotNull Long bancoId,@NotBlank @Size(max=50) String numeroCuenta,@NotBlank @Pattern(regexp="1",message="ACTIVA solo admite el valor académico 1.") String activa){}
